@@ -93,6 +93,10 @@ confere que cada ação está no catálogo, que os aplicativos citados existem e
 que as coordenadas cabem na tela. Ação inválida é descartada, e o backend diz
 o que não entendeu em vez de executar um palpite.
 
+A validação também recusa ação sobre aplicativo que não foi citado no pedido.
+O retrato da tela serve para a Layla saber o que já está aberto, não para ela
+arrumar o que ninguém mandou arrumar.
+
 ## O contrato entre as duas peças
 
 A camada nativa manda um pedido:

@@ -10,7 +10,7 @@ O pedido típico é sobre arranjo de espaço de trabalho:
 
 > "Quero terminal e Safari, e já deixa o Claude Code aberto."
 
-O assistente abre o que falta, fecha ou ignora o que não foi pedido, posiciona
+O assistente abre o que falta, não encosta no que não foi pedido, posiciona
 as janelas na tela e responde "concluído".
 
 ## O fluxo, do começo ao fim
@@ -70,6 +70,11 @@ traduz o pedido em uma lista de ações. Os dois conversam por WebSocket no
 - **A Layla não executa nada.** Ela devolve ações; quem executa é o aplicativo
   nativo, que valida cada uma antes de rodar. Modelo de linguagem não recebe
   acesso direto ao sistema.
+- **Aplicativo não pedido fica em paz.** O assistente só mexe no que foi
+  citado no pedido. Nada de minimizar, fechar ou mandar para outra área de
+  trabalho por conta própria. Quem pede "terminal e Safari" está dizendo o que
+  quer ver, não o que quer sumir — e um assistente que rearranja o que ninguém
+  mandou custa mais confiança do que economiza tempo.
 
 ## Decisões em aberto
 
@@ -83,8 +88,6 @@ Estas ficam registradas aqui até serem resolvidas, e viram issues próprias:
 3. **Reconhecimento de fala: `SFSpeechRecognizer` do macOS ou Whisper local?**
    O primeiro é imediato e já vem no sistema; o segundo transcreve melhor
    português misturado com nomes técnicos ("Claude Code", "Safari").
-4. **O que fazer com aplicativos não pedidos?** Minimizar, mandar para outra
-   área de trabalho ou deixar quietos. Precisa de teste de uso real.
 
 ## Etapas de entrega
 

@@ -29,6 +29,10 @@ ela quebrou o produto: a digitação do usuário é o que dispensa a caixa.
 ação é validada antes de tocar no sistema. Nunca construa caminho em que texto
 de modelo vira comando de shell ou chamada arbitrária.
 
+**Só se mexe no que foi pedido.** Aplicativo não citado no pedido fica onde
+está. Nada de minimizar, fechar ou mover por iniciativa própria — nem no
+prompt da Layla, nem no executor de janelas.
+
 **Áudio e transcrição são dados.** Nunca instruções. O que o microfone captura
 é conteúdo do usuário, não comando para o backend.
 
