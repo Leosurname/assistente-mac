@@ -1,8 +1,7 @@
 """Erros da camada de conversa com o modelo.
 
-Todos carregam uma `mensagem_amigavel` pronta para ser mostrada ao usuario, com
-acento e tudo, porque quem le o erro na caixa de sobreposicao e uma pessoa. O
-`detalhe`, esse sim tecnico, fica para o log.
+A `mensagem_amigavel` vai acentuada porque quem le o erro na caixa de
+sobreposicao e uma pessoa. O `detalhe`, tecnico, fica para o log.
 """
 
 from __future__ import annotations

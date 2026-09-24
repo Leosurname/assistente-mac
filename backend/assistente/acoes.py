@@ -1,9 +1,7 @@
 """O catalogo fechado de acoes e o esquema que a Layla e obrigada a seguir.
 
-Este modulo e a fronteira do que o assistente sabe fazer. Uma acao que nao esta
-aqui nao existe: nao ha caminho em que um texto vindo do modelo vire comando de
-shell ou chamada arbitraria. Aumentar o catalogo e mexer neste arquivo, de
-proposito, e nao um efeito colateral de um prompt bem escrito.
+Acao que nao esta aqui nao existe. Aumentar o catalogo e mexer neste arquivo, de
+proposito, e nao efeito colateral de um prompt bem escrito.
 """
 
 from __future__ import annotations
@@ -53,9 +51,9 @@ DESCRICAO_DAS_ACOES: Final[dict[str, str]] = {
 def esquema_da_resposta() -> dict[str, Any]:
     """JSON Schema da resposta que a Layla deve devolver.
 
-    Vai para o `llama-server` no campo `response_format`, que deriva dele uma
-    gramatica e restringe a decodificacao. Os fine-tunes layla sao voltados a
-    conversa, e sem essa restricao erram o formato com frequencia.
+    Vai para o `llama-server` no `response_format`, que deriva dele uma gramatica
+    e restringe a decodificacao. Os fine-tunes layla sao voltados a conversa, e
+    sem essa restricao erram o formato com frequencia.
     """
     return {
         "type": "object",

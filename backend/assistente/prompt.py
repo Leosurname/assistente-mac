@@ -1,9 +1,8 @@
 """Montagem do prompt: transcricao, retrato da tela e catalogo de acoes.
 
-A transcricao entra como dado, nunca como instrucao. Ela vai numa mensagem de
-usuario, separada das regras, que ficam na mensagem de sistema. O que o
-microfone capta e conteudo do usuario; se ele disser "ignore as regras acima",
-isso e uma frase que ele falou, e nao uma ordem para o backend.
+A transcricao vai numa mensagem de usuario, separada das regras, que ficam na de
+sistema: se o usuario disser "ignore as regras acima", isso e uma frase que ele
+falou, e nao uma ordem para o backend.
 """
 
 from __future__ import annotations
@@ -56,7 +55,6 @@ def montar(
     tela: RetratoDaTela,
     historico: Sequence[Mensagem] = (),
 ) -> list[Mensagem]:
-    """Monta a conversa completa que vai para a Layla."""
     pedido = transcricao.strip()[:LIMITE_DA_TRANSCRICAO]
     resumo = tela.resumo()
 
