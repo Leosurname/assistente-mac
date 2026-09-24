@@ -1,12 +1,8 @@
 """Servidor WebSocket local do Assistente Mac.
 
-A stack e FastAPI com uvicorn. O motivo esta no backend/README.md, mas em uma
-frase: o contrato do ARCHITECTURE.md e um WebSocket com uma rota de health
-check ao lado, e FastAPI entrega as duas com o mesmo aplicativo, com
-`TestClient` que exercita o WebSocket sem abrir porta.
-
-O servidor so aceita conexao local. Ele mexe nas janelas da maquina do usuario:
-nao existe motivo para alguem de fora alcancar isso.
+So aceita conexao local: ele mexe nas janelas da maquina do usuario, e nao
+existe motivo para alguem de fora alcancar isso. A escolha de FastAPI esta no
+backend/README.md.
 """
 
 from __future__ import annotations
@@ -51,7 +47,6 @@ def criar_aplicativo(
 
     @aplicativo.get("/health")
     async def health() -> dict[str, Any]:
-        """Diz se o backend esta de pe e se a Layla esta alcancavel."""
         sessoes_vivas = len(aplicativo.state.sessoes)
         layla_no_ar = await aplicativo.state.llm.esta_disponivel()
         return {

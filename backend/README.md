@@ -110,12 +110,14 @@ assistente/
   prompt.py           montagem do prompt
   acoes.py            catalogo fechado e JSON Schema da resposta
   validacao.py        as quatro perguntas
+  nomes.py            apelidos de aplicativo e o casamento com a fala
   tela.py             leitura do retrato da tela
   sessao.py           historico curto, expira junto com a caixa
   registro.py         logs
   layla/
     interface.py      Mensagem, ClienteDeLLM, corte de contexto, formato_json
     cliente.py        ClienteLayla: HTTP, streaming, novas tentativas
+    protocolo.py      corpo do pedido e leitura da resposta (formato OpenAI)
     erros.py          erros com mensagem pronta para o usuario
 ```
 
