@@ -47,6 +47,29 @@ ruff format . && ruff check . && pytest
 
 Padrões de branch, commit e PR: [CONTRIBUTING.md](CONTRIBUTING.md).
 
+## Como escrever o código
+
+Leia [preferencias.md](preferencias.md) antes da primeira linha. Em uma linha:
+código curto, comentário só para o porquê.
+
+**Esse arquivo é seu para escrever.** Toda vez que o dono do projeto disser
+como quer o código, a frase dele vira linha no `preferencias.md` ainda neste
+trabalho — antes de você dar a tarefa por encerrada, não numa tarefa futura.
+
+Escreva quando ele:
+
+- disser como prefere que se escreva, mesmo de passagem numa conversa;
+- corrigir estilo num review ou num comentário de PR;
+- reclamar do que você entregou ("não gosto disso", "longo demais");
+- responder uma dúvida de estilo que você perguntou.
+
+Uma linha na seção que já trata do assunto, nas palavras dele. Preferência que
+não cabe em nenhuma seção ganha seção de duas ou três linhas. Se ela contradiz
+o que está escrito, troque o texto antigo em vez de empilhar exceção. O arquivo
+entra no mesmo commit ou PR do trabalho que originou a preferência.
+
+Na dúvida, escreva: preferência dita em conversa morre no fim da sessão.
+
 ## Decisões ainda em aberto
 
 Estão listadas em [plan.md](plan.md), na seção "Decisões em aberto". Se o seu
