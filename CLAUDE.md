@@ -14,13 +14,14 @@ caixa é o produto, não um detalhe de interface.
 ## Estrutura
 
 ```
-app/       camada nativa macOS (Swift) — atalho, voz, sobreposição, janelas
+app/       camada nativa macOS (Python com PyObjC) — atalho, voz, sobreposição, janelas
 backend/   Python — conversa com a Layla, tradução de pedido em ações
 ```
 
 ## Regras que valem sempre
 
-**O backend é Python.** Decisão fechada, não reabra.
+**O projeto é todo Python.** Backend e camada nativa (via PyObjC). Decisão
+fechada, não reabra.
 
 **A sobreposição não rouba foco.** Se uma mudança fizer o `NSPanel` ativar,
 ela quebrou o produto: a digitação do usuário é o que dispensa a caixa.

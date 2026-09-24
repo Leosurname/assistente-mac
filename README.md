@@ -26,7 +26,7 @@ O detalhamento do produto está em [plan.md](plan.md).
 
 | Parte | Linguagem | Responsabilidade |
 |---|---|---|
-| Camada nativa | Swift (a confirmar) | Atalho global, microfone, caixa, controle de janelas |
+| Camada nativa | Python com PyObjC | Atalho global, microfone, caixa, controle de janelas |
 | Backend | Python | Conversa com a Layla, tradução de pedido em ações |
 
 A divisão e o porquê dela estão em [ARCHITECTURE.md](ARCHITECTURE.md).
