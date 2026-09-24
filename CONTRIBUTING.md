@@ -40,8 +40,21 @@ Uma descrição de PR responde a três coisas:
 - **Por quê** — a issue, e o que ela pedia
 - **Como testar** — passos concretos, não "rode e veja"
 
-PR grande demais para revisar de uma sentada deve ser quebrado. O limite
+## Tamanho do trabalho
+
+Muitos PRs pequenos e médios, não poucos grandes. PR que ninguém revisa de uma
+sentada não está sendo revisado — está sendo aprovado no escuro. O limite
 prático é o que o revisor consegue ler com atenção.
+
+Vale o mesmo para issue: issue grande vira trabalho que ninguém começa. Quebre
+em issues menores, cada uma com o seu PR.
+
+Quando o trabalho não couber num PR, empilhe: o segundo PR sai do primeiro, com
+`--base`, e cada diff mostra só a sua parte. Confira antes que a branch base
+ainda existe — empilhar sobre branch já mesclada deixa o trabalho num galho que
+não leva à `main`.
+
+O que mexer está em [preferencias.md](preferencias.md): só onde foi pedido.
 
 ## Python
 

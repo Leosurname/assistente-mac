@@ -61,6 +61,26 @@ Um assunto, um lugar. A decisão de arquitetura mora no `ARCHITECTURE.md`; o
 `README.md` do módulo diz como rodar e o que não é óbvio. Repetir a mesma
 explicação nos dois garante que um dos dois vai envelhecer errado.
 
+## Escopo
+
+Mexa só onde foi pedido. O que o pedido não cita, não se toca: sem reformatar
+arquivo vizinho, sem "já que estou aqui".
+
+Antes de commitar, olhe o que está indo:
+
+```bash
+git status --short
+git diff --cached --stat
+```
+
+Prefira `git add <caminhos>` a `git add -A`. Um PR de documentação desta
+sessão levou 35 binários `.pyc` junto porque ninguém olhou — e o conserto
+custou mais que o trabalho original.
+
+Se o diff mostra arquivo que você não escreveu, pare: quase sempre a branch
+saiu de uma base velha, e o que parece mudança sua é o resto do repositório
+aparecendo como removido.
+
 ## Como este arquivo cresce
 
 Preferência nova entra aqui assim que for dita — na conversa, no review, na
