@@ -40,6 +40,14 @@ Uma descrição de PR responde a três coisas:
 - **Por quê** — a issue, e o que ela pedia
 - **Como testar** — passos concretos, não "rode e veja"
 
+## Quem mescla
+
+O dono do repositório. Quem escreve o código entrega o link do PR e para ali —
+não mescla, não fecha, não apaga a branch.
+
+A autorização vale para o PR que foi citado, não para os próximos. "Pode
+mesclar esse" não é permissão permanente.
+
 ## Tamanho do trabalho
 
 Muitos PRs pequenos e médios, não poucos grandes. PR que ninguém revisa de uma

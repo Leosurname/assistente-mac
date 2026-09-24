@@ -77,6 +77,9 @@ escreveu quer dizer base velha, não mudança sua.
 **Quebre o trabalho.** Vários PRs pequenos e médios, não poucos grandes. O
 tamanho está no [CONTRIBUTING.md](CONTRIBUTING.md).
 
+**Não mescle.** Entregue o link do PR e pare. O merge é do dono do
+repositório; autorização dada vale só para o PR citado.
+
 ## Decisões ainda em aberto
 
 Estão listadas em [plan.md](plan.md), na seção "Decisões em aberto". Se o seu
