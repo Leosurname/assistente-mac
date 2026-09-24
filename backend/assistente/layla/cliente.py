@@ -1,16 +1,13 @@
 """Cliente HTTP da Layla.
 
-A Layla e um conjunto de pesos GGUF publicados em
-https://huggingface.co/l3utterfly, servidos localmente pelo `llama-server` do
-llama.cpp. O `llama-server` expoe uma API compativel com a da OpenAI, entao a
-conversa e um POST em `/v1/chat/completions`, com streaming por SSE. Nao ha
-chave de API: o servidor esta no `localhost` e nao pede autenticacao.
+A Layla e um conjunto de pesos GGUF servidos localmente pelo `llama-server` do
+llama.cpp, que expoe uma API compativel com a da OpenAI. Nao ha chave de API: o
+servidor esta no `localhost` e nao pede autenticacao.
 """
 
 from __future__ import annotations
 
 import asyncio
-import json
 import logging
 import random
 from collections.abc import AsyncIterator, Sequence
@@ -25,7 +22,13 @@ from assistente.layla.erros import (
     ErroDeResposta,
     ErroDeTempoEsgotado,
 )
-from assistente.layla.interface import Mensagem, limitar_contexto
+from assistente.layla.interface import Mensagem
+from assistente.layla.protocolo import (
+    FIM,
+    corpo_do_pedido,
+    pedaco_do_evento,
+    texto_da_resposta,
+)
 
 registrador = logging.getLogger(__name__)
 
@@ -48,8 +51,6 @@ class ClienteLayla:
             timeout=httpx.Timeout(self.configuracao.tempo_limite)
         )
 
-    # ── ciclo de vida ────────────────────────────────────────────────────────
-
     async def fechar(self) -> None:
         """Fecha o cliente HTTP, se fomos nos que o criamos."""
         if self._http_proprio:
@@ -60,42 +61,6 @@ class ClienteLayla:
 
     async def __aexit__(self, *_: object) -> None:
         await self.fechar()
-
-    # ── montagem do pedido ───────────────────────────────────────────────────
-
-    def _corpo(
-        self,
-        mensagens: Sequence[Mensagem],
-        *,
-        transmitir: bool,
-        temperatura: float | None,
-        maximo_de_tokens: int | None,
-        formato_resposta: dict[str, Any] | None,
-    ) -> dict[str, Any]:
-        cortadas = limitar_contexto(mensagens, self.configuracao.limite_contexto)
-        if len(cortadas) < len(mensagens):
-            registrador.info(
-                "Historico cortado para caber no contexto: %d de %d mensagens",
-                len(cortadas),
-                len(mensagens),
-            )
-
-        corpo: dict[str, Any] = {
-            "messages": [mensagem.para_api() for mensagem in cortadas],
-            "stream": transmitir,
-            "temperature": (
-                self.configuracao.temperatura if temperatura is None else temperatura
-            ),
-        }
-        if self.configuracao.modelo:
-            corpo["model"] = self.configuracao.modelo
-        if maximo_de_tokens is not None:
-            corpo["max_tokens"] = maximo_de_tokens
-        if formato_resposta is not None:
-            corpo["response_format"] = formato_resposta
-        return corpo
-
-    # ── novas tentativas ─────────────────────────────────────────────────────
 
     async def _com_novas_tentativas(self, fazer_pedido: Any) -> httpx.Response:
         """Repete o pedido enquanto a falha for transitoria.
@@ -153,8 +118,6 @@ class ClienteLayla:
             return ErroDeLimiteDeUso("A Layla recusou por excesso de pedidos (429)")
         return ErroDeIndisponibilidade(f"A Layla respondeu {resposta.status_code}")
 
-    # ── conversa ─────────────────────────────────────────────────────────────
-
     async def conversar(
         self,
         mensagens: Sequence[Mensagem],
@@ -163,7 +126,8 @@ class ClienteLayla:
         maximo_de_tokens: int | None = None,
         formato_resposta: dict[str, Any] | None = None,
     ) -> str:
-        corpo = self._corpo(
+        corpo = corpo_do_pedido(
+            self.configuracao,
             mensagens,
             transmitir=False,
             temperatura=temperatura,
@@ -182,7 +146,7 @@ class ClienteLayla:
                 f"A Layla devolveu algo que nao e JSON: {erro}"
             ) from erro
 
-        return _texto_da_resposta(dados)
+        return texto_da_resposta(dados)
 
     async def transmitir(
         self,
@@ -197,7 +161,8 @@ class ClienteLayla:
         O `llama-server` usa o mesmo formato de SSE da OpenAI: linhas `data: `
         com um JSON por pedaco, encerradas por `data: [DONE]`.
         """
-        corpo = self._corpo(
+        corpo = corpo_do_pedido(
+            self.configuracao,
             mensagens,
             transmitir=True,
             temperatura=temperatura,
@@ -223,8 +188,8 @@ class ClienteLayla:
             if resposta.is_error:
                 raise self._erro_de_status(resposta)
             async for linha in resposta.aiter_lines():
-                pedaco = _pedaco_do_evento(linha)
-                if pedaco is _FIM:
+                pedaco = pedaco_do_evento(linha)
+                if pedaco is FIM:
                     break
                 if pedaco:
                     yield pedaco
@@ -240,39 +205,3 @@ class ClienteLayla:
         except httpx.HTTPError:
             return False
         return not resposta.is_error
-
-
-# ── leitura da resposta ──────────────────────────────────────────────────────
-
-_FIM = object()
-
-
-def _texto_da_resposta(dados: Any) -> str:
-    """Extrai o texto da primeira escolha de uma resposta nao transmitida."""
-    try:
-        escolhas = dados["choices"]
-        conteudo = escolhas[0]["message"]["content"]
-    except (KeyError, IndexError, TypeError) as erro:
-        raise ErroDeResposta(f"Resposta da Layla sem conteudo: {dados!r}") from erro
-    if conteudo is None:
-        raise ErroDeResposta("A Layla devolveu uma resposta vazia")
-    return str(conteudo)
-
-
-def _pedaco_do_evento(linha: str) -> Any:
-    """Le uma linha de SSE e devolve o texto dela, `_FIM`, ou string vazia."""
-    linha = linha.strip()
-    if not linha or not linha.startswith("data:"):
-        return ""
-    dado = linha[len("data:") :].strip()
-    if dado == "[DONE]":
-        return _FIM
-    try:
-        evento = json.loads(dado)
-    except ValueError as erro:
-        raise ErroDeResposta(f"Pedaco de streaming invalido: {dado!r}") from erro
-    try:
-        delta = evento["choices"][0].get("delta") or {}
-    except (KeyError, IndexError, TypeError):
-        return ""
-    return delta.get("content") or ""

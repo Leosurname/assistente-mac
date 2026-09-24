@@ -1,7 +1,6 @@
 """Configuracao do backend, lida sempre de variaveis de ambiente.
 
-Nenhum valor sensivel mora no codigo. O que nao for informado cai em um padrao
-que faz sentido para uma maquina rodando a Layla localmente.
+Nenhum valor sensivel mora no codigo.
 """
 
 from __future__ import annotations
@@ -40,8 +39,6 @@ def _ler_int(nome: str, padrao: int) -> int:
 
 @dataclass(frozen=True)
 class ConfiguracaoLayla:
-    """Tudo que o cliente da Layla precisa saber para falar com o modelo."""
-
     url: str = URL_PADRAO_LAYLA
     modelo: str | None = None
     tempo_limite: float = TEMPO_LIMITE_PADRAO
@@ -69,7 +66,6 @@ class ConfiguracaoLayla:
 
     @classmethod
     def do_ambiente(cls) -> ConfiguracaoLayla:
-        """Monta a configuracao a partir das variaveis de ambiente."""
         modelo = os.getenv("LAYLA_MODEL")
         return cls(
             url=os.getenv("LAYLA_URL") or URL_PADRAO_LAYLA,

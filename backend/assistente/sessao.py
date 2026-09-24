@@ -1,8 +1,7 @@
 """Sessoes: o historico curto que faz "agora joga pra direita" ter sentido.
 
-A sessao vive tanto quanto a caixa de sobreposicao. Ela expira junto, porque
-o produto e uma caixa que some sozinha: guardar conversa alem disso seria
-lembrar de algo que o usuario ja considerou encerrado.
+A sessao expira junto com a caixa de sobreposicao: guardar conversa alem disso
+seria lembrar de algo que o usuario ja considerou encerrado.
 """
 
 from __future__ import annotations
@@ -65,7 +64,6 @@ class RegistroDeSessoes:
         return nova
 
     def encerrar(self, identificador: str) -> None:
-        """Esquece a sessao. A caixa sumiu, a conversa acabou."""
         self._sessoes.pop(identificador, None)
 
     def limpar(self) -> int:

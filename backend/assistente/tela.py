@@ -40,7 +40,6 @@ class RetratoDaTela:
 
     @property
     def apps_conhecidos(self) -> tuple[str, ...]:
-        """Todo aplicativo que a maquina sabe que existe."""
         vistos: dict[str, None] = {}
         for nome in (
             *self.apps_abertos,
@@ -63,8 +62,7 @@ class RetratoDaTela:
     def do_dicionario(cls, bruto: Any) -> RetratoDaTela:
         """Le o retrato do JSON que chega pelo WebSocket.
 
-        Tudo aqui e entrada vinda de fora e e tratada como dado: qualquer campo
-        fora do formato vira erro, nunca um palpite.
+        Entrada vinda de fora: campo fora do formato vira erro, nunca palpite.
         """
         if bruto is None:
             return cls()
