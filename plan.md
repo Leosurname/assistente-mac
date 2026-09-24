@@ -100,24 +100,32 @@ Estas ficam registradas aqui até serem resolvidas, e viram issues próprias:
 2. **Reconhecimento de fala: `SFSpeechRecognizer` do macOS ou Whisper local?**
    O primeiro é imediato e já vem no sistema; o segundo transcreve melhor
    português misturado com nomes técnicos ("Claude Code", "Safari").
+   Só precisa ser resolvida na fase de voz, depois da beta.
+3. **Por onde o texto entra na beta?** Pelo terminal (`scripts/pedido.py`) ou
+   por um campo de texto na sobreposição. O campo exige rever a regra de que
+   digitar faz a caixa sumir.
 
 ## Etapas de entrega
 
+**A beta é só texto.** O pedido chega digitado; voz entra numa fase seguinte,
+depois da beta.
+
 **Etapa 1 — Esqueleto.** Atalho global, caixa aparecendo e sumindo pelas três
-regras (5 segundos, digitação, `Esc`). Sem voz e sem Layla: o texto é digitado.
-Serve para validar a sensação de uso, que é o risco maior do projeto.
+regras (5 segundos, digitação, `Esc`). Serve para validar a sensação de uso,
+que é o risco maior do projeto.
 
-**Etapa 2 — Voz.** Microfone e transcrição ao vivo na caixa.
-
-**Etapa 3 — Layla.** Backend em Python, conversa com a Layla, pedido virando
+**Etapa 2 — Layla.** Backend em Python, conversa com a Layla, pedido virando
 lista de ações.
 
-**Etapa 4 — Janelas.** Abertura de aplicativos e posicionamento via API de
+**Etapa 3 — Janelas.** Abertura de aplicativos e posicionamento via API de
 acessibilidade. É aqui que o exemplo do terminal com o Safari passa a funcionar
-de ponta a ponta.
+de ponta a ponta, por texto.
 
-**Etapa 5 — Acabamento.** Confirmação falada, tratamento de erro ("não achei o
-Claude Code"), preferências do usuário.
+**Etapa 4 — Acabamento.** Tratamento de erro ("não achei o Claude Code"),
+preferências do usuário. Fecha a beta.
+
+**Depois da beta — Voz.** Microfone, transcrição ao vivo na caixa e
+confirmação falada.
 
 ## Como saber se deu certo
 

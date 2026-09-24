@@ -22,6 +22,8 @@ O assistente não funciona sem estas três, concedidas em
 | Microfone | Ouvir o pedido |
 | Reconhecimento de Fala | Transcrever o que foi falado |
 
+Na beta, que é só texto, basta Acessibilidade.
+
 Na primeira execução o sistema pergunta. Se você negar por engano, precisa
 conceder na mão nos Ajustes — o macOS não pergunta de novo.
 
@@ -158,6 +160,20 @@ A segunda é a que importa mais. Todo o desenho do backend aposta que o
 `llama-server` devolve JSON válido quando recebe um esquema — os fine-tunes da
 Layla são feitos para conversa, não para saída estruturada. Se essa checagem
 falhar, a estratégia precisa mudar antes de qualquer outra coisa.
+
+## Fazendo um pedido (beta)
+
+A beta é só texto; voz vem numa fase seguinte.
+
+```bash
+python scripts/pedido.py "quero terminal e safari"
+python scripts/pedido.py --executar "quero terminal e safari"
+```
+
+Manda o pedido ao backend e mostra as ações que a Layla devolveu. Sem
+`--executar`, nada se mexe: serve para ver o que ela entendeu antes de deixar
+o programa mover janela. `--tela-falsa` usa um retrato fixo, para rodar fora
+do macOS.
 
 ## Verificando que funcionou
 
