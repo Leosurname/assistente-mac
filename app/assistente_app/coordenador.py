@@ -1,10 +1,8 @@
 """O fio que liga atalho, voz, caixa, backend e janelas.
 
-Tudo que o coordenador usa entra por parametro: a caixa, o microfone, o
-executor de janelas, o retrato da tela, o envio ao backend e o relogio. Nenhum
-import do macOS acontece aqui, e e por isso que o fluxo inteiro — do atalho ate
-a caixa sumindo — pode ser testado sem abrir janela, sem microfone e sem
-backend no ar.
+Tudo entra por parametro e nenhum import do macOS acontece aqui: e o que permite
+testar o fluxo inteiro, do atalho ate a caixa sumindo, sem abrir janela, sem
+microfone e sem backend no ar.
 """
 
 from __future__ import annotations
@@ -29,8 +27,6 @@ MENSAGEM_DE_FALHA = "não consegui falar com a Layla"
 
 
 class Caixa(Protocol):
-    """A sobreposicao que aparece na tela."""
-
     def mostrar(self) -> None: ...
     def ocultar(self) -> None: ...
     def escrever(self, texto: str) -> None: ...
@@ -43,8 +39,6 @@ class Microfone(Protocol):
 
 
 class Executor(Protocol):
-    """Quem de fato mexe nas janelas."""
-
     def executar(self, acoes: tuple) -> list[str]: ...
 
 
@@ -72,8 +66,6 @@ class Coordenador:
         self.dispensa = Dispensa(espera=espera)
         self.sessao: str | None = None
 
-    # --- eventos que vem da interface -----------------------------------
-
     def ao_atalho(self) -> None:
         """Option+9."""
         efeito = self.dispensa.atalho(self.relogio())
@@ -93,7 +85,6 @@ class Coordenador:
             self._enviar_pedido(texto.strip())
 
     def ao_digitar(self) -> None:
-        """O usuario voltou a digitar no aplicativo de baixo."""
         self._aplicar(self.dispensa.digitou())
 
     def ao_escape(self) -> None:
@@ -104,7 +95,6 @@ class Coordenador:
         self._aplicar(self.dispensa.tique(self.relogio()))
 
     def ao_responder(self, bruto: Any) -> None:
-        """Chegou resposta do backend."""
         if not self.dispensa.visivel:
             return
         try:
@@ -122,12 +112,9 @@ class Coordenador:
         self._executar(resposta)
 
     def ao_falhar(self, erro: Exception) -> None:
-        """A conversa com o backend falhou."""
         registrador.error("Falha no backend: %s", erro)
         if self.dispensa.visivel:
             self._concluir(MENSAGEM_DE_FALHA)
-
-    # --- miolo -----------------------------------------------------------
 
     def _enviar_pedido(self, texto: str) -> None:
         self.dispensa.pedido_enviado()

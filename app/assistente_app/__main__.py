@@ -1,7 +1,6 @@
-"""Sobe a camada nativa.
+"""Sobe a camada nativa (`python -m assistente_app`).
 
-`python -m assistente_app`. O aplicativo vive na barra de menu, sem icone no
-Dock, esperando o Option+9.
+O aplicativo vive na barra de menu, sem icone no Dock, esperando o Option+9.
 """
 
 from __future__ import annotations

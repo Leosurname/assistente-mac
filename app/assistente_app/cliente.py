@@ -1,10 +1,8 @@
 """Conversa com o backend pelo WebSocket local.
 
-O AppKit ocupa a thread principal com o seu run loop, e o cliente WebSocket
-quer um loop de asyncio. Os dois nao cabem na mesma thread, entao o cliente
-roda numa thread propria e devolve cada resposta para a thread principal
-atraves de `despachar` — porque mexer em NSPanel fora da principal e receita
-de travamento.
+O AppKit ocupa a thread principal com o seu run loop e o cliente WebSocket quer
+um loop de asyncio: os dois nao cabem na mesma thread. Daqui cada resposta volta
+para a principal por `despachar`, porque mexer em NSPanel fora dela trava.
 """
 
 from __future__ import annotations
@@ -57,8 +55,6 @@ class ClienteDoBackend:
     def parar(self) -> None:
         if self._laco is not None:
             self._laco.call_soon_threadsafe(self._laco.stop)
-
-    # --- dentro da thread do cliente -------------------------------------
 
     def _rodar(self) -> None:
         self._laco = asyncio.new_event_loop()

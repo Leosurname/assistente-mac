@@ -1,13 +1,8 @@
-"""O contrato com o backend, do lado da camada nativa.
+"""O contrato com o backend, descrito no ARCHITECTURE.md: monta o pedido, le a
+resposta, sem tocar em rede.
 
-O formato esta descrito no ARCHITECTURE.md. Este modulo monta a mensagem de
-pedido e le a resposta — sem tocar em rede, para que o formato possa ser
-testado sozinho.
-
-Tudo que chega pelo WebSocket e tratado como dado. Uma resposta fora do formato
-vira erro, nunca um palpite: o outro lado da conversa tem um modelo de
-linguagem no caminho, e resposta de modelo nao vira comando sem passar por
-conferencia.
+Resposta fora do formato vira erro, nunca palpite: do outro lado ha um modelo de
+linguagem, e resposta de modelo nao vira comando sem passar por conferencia.
 """
 
 from __future__ import annotations
