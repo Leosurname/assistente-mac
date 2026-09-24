@@ -139,7 +139,7 @@ isso sem querer.
 Da raiz do repositório:
 
 ```bash
-ruff format . && ruff check . && pytest
+ruff check . && pytest
 ```
 
 A Layla é sempre de mentira nos testes: o cliente HTTP é interceptado por um

@@ -64,6 +64,11 @@ Um assunto, um lugar. A decisão de arquitetura mora no `ARCHITECTURE.md`; o
 `README.md` do módulo diz como rodar e o que não é óbvio. Repetir a mesma
 explicação nos dois garante que um dos dois vai envelhecer errado.
 
+## Formato
+
+Condição de `if` vai entre parênteses em todo o projeto: `if (condicao):`. Por
+isso não se usa `ruff format`: ele tira os parênteses.
+
 ## Escopo
 
 Mexa só onde foi pedido. O que o pedido não cita, não se toca: sem reformatar

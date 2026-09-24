@@ -100,7 +100,7 @@ explicando o que fazer. É a falha mais comum na primeira execução.
 
 ```bash
 cd app
-ruff format . && ruff check . && pytest
+ruff check . && pytest
 ```
 
 Nenhum teste abre janela, liga microfone ou usa rede.

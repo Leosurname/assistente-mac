@@ -42,7 +42,7 @@ ambiente. Veja [SETUP.md](SETUP.md).
 ## Antes de abrir PR
 
 ```bash
-ruff format . && ruff check . && pytest
+ruff check . && pytest
 ```
 
 Padrões de branch, commit e PR: [CONTRIBUTING.md](CONTRIBUTING.md).

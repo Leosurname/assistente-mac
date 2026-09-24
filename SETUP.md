@@ -146,6 +146,21 @@ cp .env.example .env
 O `.env` está no `.gitignore` e nunca deve ser versionado. Nenhuma dessas
 variáveis carrega segredo: a Layla roda no `localhost` e não pede chave.
 
+## Antes do primeiro teste
+
+```bash
+python scripts/diagnostico.py
+```
+
+Confere as quatro coisas que precisam estar de pé: o `llama-server` no ar com
+modelo carregado, a decodificação restrita respeitando o `json_schema`, o
+backend respondendo, e a permissão de Acessibilidade concedida.
+
+A segunda é a que importa mais. Todo o desenho do backend aposta que o
+`llama-server` devolve JSON válido quando recebe um esquema — os fine-tunes da
+Layla são feitos para conversa, não para saída estruturada. Se essa checagem
+falhar, a estratégia precisa mudar antes de qualquer outra coisa.
+
 ## Fazendo um pedido (beta)
 
 A beta é só texto; voz vem numa fase seguinte.

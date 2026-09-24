@@ -66,7 +66,7 @@ O que mexer está em [preferencias.md](preferencias.md): só onde foi pedido.
 
 ## Python
 
-- Formatação com `ruff format`, verificação com `ruff check`
+- Verificação com `ruff check`; sem `ruff format` (ver [preferencias.md](preferencias.md))
 - Tipagem nas funções públicas
 - Testes com `pytest`; a Layla sempre mockada nos testes
 - Nada de chamada de rede em teste
@@ -78,7 +78,7 @@ no mesmo PR.
 Antes de abrir o PR:
 
 ```bash
-ruff format . && ruff check . && pytest
+ruff check . && pytest
 ```
 
 ## Swift
