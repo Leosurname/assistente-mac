@@ -8,7 +8,7 @@
 - **macOS 13** ou superior
 - **Python 3.11** ou superior
 - **Xcode** com as ferramentas de linha de comando, para a camada nativa
-- Acesso à **Layla** (chave de API, se for remota; o binário, se for local)
+- **Layla** instalada localmente (clonada do repositório público; veja abaixo)
 
 ## Permissões do macOS
 
@@ -61,8 +61,7 @@ cp .env.example .env
 
 | Variável | Obrigatória | Para quê |
 |---|---|---|
-| `LAYLA_API_URL` | sim | Endereço da Layla |
-| `LAYLA_API_KEY` | se remota | Autenticação |
+| `LAYLA_URL` | sim | Endereço local da Layla (padrão: `http://localhost:11434`) |
 | `LAYLA_MODEL` | não | Modelo a usar |
 | `ASSISTENTE_PORTA` | não | Porta do backend (padrão: 8765) |
 | `ASSISTENTE_TIMEOUT_CAIXA` | não | Segundos até a caixa sumir (padrão: 5) |
