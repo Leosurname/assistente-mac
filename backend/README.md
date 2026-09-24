@@ -35,11 +35,84 @@ esquema e restringe a decodificação: a resposta é sempre um JSON válido.
 
 Isso garante formato, não sentido. A validação do backend continua obrigatória.
 
+## A stack: FastAPI com uvicorn
+
+O `ARCHITECTURE.md` pede duas coisas: um WebSocket no `localhost` e um health
+check ao lado. FastAPI entrega as duas no mesmo aplicativo e o `TestClient`
+exercita o WebSocket dentro do processo, sem abrir porta — que é o que permite
+testar o contrato inteiro sem microfone, sem janela e sem rede.
+
+As alternativas consideradas:
+
+- **`websockets` puro.** Faria o WebSocket, mas o health check viraria um
+  segundo servidor. Duas coisas para subir e monitorar em vez de uma.
+- **Flask ou Django.** Servem HTTP bem, mas o WebSocket entra por extensão, e o
+  cliente da Layla já é `async`. Uma ponte entre síncrono e assíncrono no meio
+  do caminho de 3 segundos do produto é latência comprada sem necessidade.
+
+`uvicorn` porque é o servidor ASGI que o FastAPI assume, e `websockets` como o
+transporte que ele usa para falar WebSocket.
+
+## O caminho de um pedido
+
+```
+pedido (WebSocket)
+   │
+   ├─ tela.py        le e confere o retrato da tela
+   ├─ sessao.py      recupera o historico curto
+   ├─ prompt.py      junta transcricao, retrato e catalogo
+   ├─ layla/         manda para a Layla com json_schema
+   ├─ validacao.py   filtra o que voltou
+   └─ resposta: {"tipo": "acoes", "acoes": [...], "fala": "..."}
+```
+
+## A validação, em quatro perguntas
+
+1. **A ação está no catálogo?** `abrir_app`, `fechar_app`, `posicionar`,
+   `focar`, `minimizar`. Só. E a ação aprovada é reconstruída campo a campo, de
+   modo que nada que a Layla tenha inventado a mais chega ao executor.
+2. **O aplicativo existe?** Responde o campo `apps_instalados` do retrato. Não
+   dá para usar a lista de abertos: `abrir_app` existe justamente para o que
+   ainda não está aberto. Sem `apps_instalados`, a checagem fica com a camada
+   nativa, que é quem enxerga `/Applications`.
+3. **As coordenadas cabem na tela?** Quando vêm coordenadas, elas precisam
+   caber inteiras em algum monitor. Janela fora da tela é janela perdida.
+4. **O aplicativo foi citado no pedido?** A que mais protege. O retrato da tela
+   diz o que já existe, não o que está errado. O Spotify que está tocando e não
+   foi mencionado continua tocando, onde estava.
+
+A quarta pergunta olha o histórico da sessão inteira, e não só o pedido de
+agora: "agora joga o Safari pra direita" vem depois de um pedido em que o
+Safari foi citado. A comparação ignora acento e caixa, e conhece apelidos
+(`vscode` para `Visual Studio Code`, `chrome` para `Google Chrome`).
+
+## Sessões
+
+Uma sessão guarda os últimos 6 turnos e vale 120 segundos, configuráveis por
+`ASSISTENTE_VALIDADE_SESSAO`. Ela expira junto com a caixa de sobreposição,
+porque o produto é uma caixa que some sozinha: guardar conversa além disso é
+lembrar de algo que o usuário já considerou encerrado. A camada nativa também
+pode encerrá-la na mão, mandando `{"tipo": "encerrar", "sessao": "..."}`.
+
+## Só conexão local
+
+O servidor escuta em `127.0.0.1` e recusa, com o código 1008, qualquer
+WebSocket que não venha da própria máquina. Ele mexe nas janelas do usuário:
+não existe motivo para alguém de fora alcançar isso.
+
 ## Organização
 
 ```
 assistente/
   configuracao.py     leitura das variaveis de ambiente
+  servidor.py         FastAPI: WebSocket /ws e health check /health
+  tradutor.py         pedido em texto, acoes validadas na saida
+  prompt.py           montagem do prompt
+  acoes.py            catalogo fechado e JSON Schema da resposta
+  validacao.py        as quatro perguntas
+  tela.py             leitura do retrato da tela
+  sessao.py           historico curto, expira junto com a caixa
+  registro.py         logs
   layla/
     interface.py      Mensagem, ClienteDeLLM, corte de contexto, formato_json
     cliente.py        ClienteLayla: HTTP, streaming, novas tentativas
@@ -49,6 +122,16 @@ assistente/
 O resto do backend depende de `ClienteDeLLM`, nunca de `ClienteLayla`. Trocar de
 provedor é escrever outra implementação do protocolo.
 
+## Rodando
+
+```bash
+cd backend && python -m assistente.servidor
+```
+
+Logs em `LOG_LEVEL`. A transcrição não entra em log fora do `DEBUG`: o que o
+usuário fala é conteúdo dele, e arquivo de log é o jeito mais fácil de vazar
+isso sem querer.
+
 ## Rodando os testes
 
 Da raiz do repositório:
@@ -57,5 +140,7 @@ Da raiz do repositório:
 ruff format . && ruff check . && pytest
 ```
 
-A Layla é sempre de mentira nos testes: um `httpx.MockTransport` intercepta o
-pedido dentro do processo (`backend/tests/apoio.py`). Nenhum teste abre conexão.
+A Layla é sempre de mentira nos testes: o cliente HTTP é interceptado por um
+`httpx.MockTransport` (`backend/tests/apoio.py`) e as rotas recebem um
+`ClienteDeLLM` falso que devolve o que o teste mandar. Nenhum teste abre
+conexão — rodar com a máquina offline dá o mesmo resultado.

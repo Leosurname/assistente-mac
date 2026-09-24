@@ -1,5 +1,8 @@
 # Dependencias do backend do Assistente Mac.
 httpx==0.28.1
+fastapi==0.139.0
+uvicorn==0.47.0
+websockets==15.0.1
 
 # Desenvolvimento
 pytest==8.4.2
