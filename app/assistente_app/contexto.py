@@ -1,9 +1,7 @@
 """O retrato da tela que vai junto com cada pedido.
 
-Sem isto a Layla nao tem como decidir o que abrir e o que ja esta aberto. E
-tambem daqui que sai `apps_instalados`: o backend nao le `/Applications` — ele
-nao deve tocar no disco do usuario — entao quem diz o que existe na maquina e
-esta camada.
+Daqui sai tambem `apps_instalados`: o backend nao le `/Applications`, entao quem
+diz o que existe na maquina e esta camada.
 """
 
 from __future__ import annotations

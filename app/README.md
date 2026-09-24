@@ -29,6 +29,7 @@ O que dá para testar sem macOS fica separado do que não dá:
 | `sobreposicao.py` | sim | O `NSPanel` que não rouba foco |
 | `voz.py` | sim | `SFSpeechRecognizer` + `AVAudioEngine` |
 | `janelas.py` | sim | `NSWorkspace` e a API de acessibilidade |
+| `busca.py` | sim | Acha o aplicativo e a janela pelo nome |
 | `contexto.py` | sim | O retrato da tela |
 | `cliente.py` | sim (thread) | WebSocket com o backend |
 

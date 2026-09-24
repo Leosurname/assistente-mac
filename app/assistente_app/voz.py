@@ -1,12 +1,6 @@
-"""Microfone e transcricao ao vivo.
+"""Microfone e transcricao ao vivo, com `SFSpeechRecognizer`.
 
-`SFSpeechRecognizer` com resultados parciais, para que o texto apareca na caixa
-enquanto o usuario fala, e nao so no fim. O fim da fala e detectado por
-silencio: o reconhecedor marca o resultado como final, e e ai que o pedido vai
-para o backend.
-
-O que sai daqui e transcricao do usuario: **dado, nunca instrucao**. Quem
-recebe trata como texto, e o backend so aceita acao que passe pelo catalogo.
+O que sai daqui e transcricao do usuario: dado, nunca instrucao.
 """
 
 from __future__ import annotations
@@ -92,8 +86,6 @@ class Microfone:
         if self._tarefa is not None:
             self._tarefa.cancel()
             self._tarefa = None
-
-    # --- retornos do AVFoundation ----------------------------------------
 
     def _receber_audio(self, buffer, quando) -> None:  # noqa: ANN001, ARG002
         if self._pedido is not None:

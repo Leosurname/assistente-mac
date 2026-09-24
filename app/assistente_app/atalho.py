@@ -1,13 +1,8 @@
-"""O atalho global e a deteccao de digitacao.
+"""O atalho global e a deteccao de digitacao, no mesmo event tap do Quartz.
 
-Os dois saem do mesmo lugar: um event tap do Quartz, que ve o teclado do
-sistema inteiro. E por isso que o aplicativo exige permissao de Acessibilidade
-— sem ela o macOS nao entrega evento de teclado de outros aplicativos, e o
-`Option + 9` simplesmente nao acontece.
-
-O tap consome o `Option + 9` (devolve `None`) para que o caractere nao seja
-digitado no aplicativo que esta na frente. Qualquer outra tecla passa adiante
-intacta: este modulo observa, nao intercepta.
+E por ver o teclado do sistema inteiro que o aplicativo exige Acessibilidade:
+sem ela o macOS nao entrega evento de outros aplicativos, e o `Option + 9`
+simplesmente nao acontece. Fora ele, toda tecla passa adiante intacta.
 """
 
 from __future__ import annotations

@@ -1,19 +1,9 @@
-"""As regras que fazem a caixa sumir.
+"""As regras que fazem a caixa sumir: prazo, digitacao ou Esc.
 
-Este e o coracao do produto. A caixa precisa sumir sozinha: se ela exigir que o
-usuario a dispense, vira mais uma janela para gerenciar — exatamente o problema
-que veio resolver.
-
-Sao tres gatilhos, o que vier primeiro:
-
-* passam 5 segundos sem pedido novo;
-* o usuario comeca a digitar, sinal claro de que voltou ao trabalho;
-* o usuario aperta Esc.
-
-O modulo e uma maquina de estados pura: nao importa NSPanel, nao le relogio do
-sistema e nao toca em nada do macOS. Recebe o instante por parametro e devolve
-o que deve acontecer. E por isso que da para testar as tres regras sem abrir
-janela nenhuma.
+Caixa que exige ser dispensada vira mais uma janela para gerenciar — o problema
+que o produto veio resolver. Maquina de estados pura, sem macOS e sem relogio do
+sistema: o instante entra por parametro, e e o que permite testar as tres regras
+sem abrir janela nenhuma.
 """
 
 from __future__ import annotations
@@ -107,7 +97,6 @@ class Dispensa:
         return self._ocultar()
 
     def escape(self) -> Efeito:
-        """O usuario apertou Esc."""
         return self._ocultar()
 
     def tique(self, agora: float) -> Efeito:

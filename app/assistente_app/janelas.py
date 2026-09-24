@@ -1,9 +1,5 @@
-"""Quem de fato mexe nas janelas.
-
-Cada acao do catalogo vira uma chamada ao macOS aqui. O que chega ja passou
-pela validacao do backend e pela leitura do contrato em `protocolo.py`; esta
-camada confere de novo o que depende da maquina (o aplicativo existe? tem
-janela?) e devolve uma mensagem legivel quando nao da para fazer.
+"""Quem de fato mexe nas janelas: cada acao do catalogo vira uma chamada ao
+macOS aqui.
 
 Nada aqui executa texto. `abrir_app` recebe um nome de aplicativo e chama
 `NSWorkspace`, que abre um pacote `.app` — nao ha caminho para shell.
@@ -12,37 +8,24 @@ Nada aqui executa texto. `abrir_app` recebe um nome de aplicativo e chama
 from __future__ import annotations
 
 import logging
-import os
-import time
-from typing import Any
 
-from AppKit import (
-    NSApplicationActivationPolicyRegular,
-    NSWorkspace,
-    NSWorkspaceOpenConfiguration,
-)
+from AppKit import NSWorkspace, NSWorkspaceOpenConfiguration
 from ApplicationServices import (
-    AXUIElementCopyAttributeValue,
-    AXUIElementCreateApplication,
     AXUIElementSetAttributeValue,
     AXValueCreate,
-    kAXErrorSuccess,
     kAXPositionAttribute,
     kAXSizeAttribute,
     kAXValueTypeCGPoint,
     kAXValueTypeCGSize,
-    kAXWindowsAttribute,
 )
 from Foundation import NSURL
 
 from assistente_app import contexto
+from assistente_app.busca import caminho_do_aplicativo, primeira_janela, rodando
 from assistente_app.protocolo import Acao
 from assistente_app.regioes import RegiaoDesconhecida, calcular
 
 registrador = logging.getLogger(__name__)
-
-ESPERA_ENTRE_TENTATIVAS = 0.25
-TENTATIVAS_APOS_ABRIR = 20
 
 
 class ExecutorDeJanelas:
@@ -74,13 +57,11 @@ class ExecutorDeJanelas:
                 return self._posicionar(acao.app, acao.regiao or "")
         return f"não sei fazer {acao.acao!r}"
 
-    # --- acoes -----------------------------------------------------------
-
     def _abrir(self, nome: str) -> str | None:
-        if _rodando(nome) is not None:
+        if rodando(nome) is not None:
             return self._focar(nome)
 
-        caminho = _caminho_do_aplicativo(nome)
+        caminho = caminho_do_aplicativo(nome)
         if caminho is None:
             return f"não achei o {nome}"
 
@@ -93,21 +74,21 @@ class ExecutorDeJanelas:
         return None
 
     def _fechar(self, nome: str) -> str | None:
-        app = _rodando(nome)
+        app = rodando(nome)
         if app is None:
             return None
         app.terminate()
         return None
 
     def _focar(self, nome: str) -> str | None:
-        app = _rodando(nome)
+        app = rodando(nome)
         if app is None:
             return f"o {nome} não está aberto"
         app.activateWithOptions_(0)
         return None
 
     def _minimizar(self, nome: str) -> str | None:
-        janela = _primeira_janela(nome)
+        janela = primeira_janela(nome)
         if janela is None:
             return f"o {nome} não tem janela para minimizar"
         AXUIElementSetAttributeValue(janela, "AXMinimized", True)
@@ -119,7 +100,7 @@ class ExecutorDeJanelas:
         except RegiaoDesconhecida as erro:
             return str(erro)
 
-        janela = _primeira_janela(nome, esperar=True)
+        janela = primeira_janela(nome, esperar=True)
         if janela is None:
             return f"o {nome} não tem janela para posicionar"
 
@@ -133,54 +114,3 @@ class ExecutorDeJanelas:
         AXUIElementSetAttributeValue(janela, kAXPositionAttribute, ponto)
         AXUIElementSetAttributeValue(janela, kAXSizeAttribute, tamanho)
         return None
-
-
-# --- apoio ---------------------------------------------------------------
-
-
-def _rodando(nome: str) -> Any | None:
-    """Acha o aplicativo rodando pelo nome que o usuario usaria."""
-    procurado = nome.casefold()
-    for app in NSWorkspace.sharedWorkspace().runningApplications():
-        if app.activationPolicy() != NSApplicationActivationPolicyRegular:
-            continue
-        local = (app.localizedName() or "").casefold()
-        if local == procurado or procurado in local:
-            return app
-    return None
-
-
-def _caminho_do_aplicativo(nome: str) -> str | None:
-    procurado = nome.casefold()
-    for pasta in contexto.PASTAS_DE_APLICATIVOS:
-        try:
-            itens = os.listdir(pasta)
-        except OSError:
-            continue
-        for item in itens:
-            if not item.endswith(".app"):
-                continue
-            if item[: -len(".app")].casefold() == procurado:
-                return f"{pasta}/{item}"
-    return None
-
-
-def _primeira_janela(nome: str, esperar: bool = False) -> Any | None:
-    """A janela principal do aplicativo, pela API de acessibilidade.
-
-    Com `esperar`, tenta de novo por alguns segundos: aplicativo recem-aberto
-    demora a ter janela, e posicionar logo depois de abrir e o caso comum.
-    """
-    tentativas = TENTATIVAS_APOS_ABRIR if esperar else 1
-    for _ in range(tentativas):
-        app = _rodando(nome)
-        if app is not None:
-            elemento = AXUIElementCreateApplication(app.processIdentifier())
-            codigo, janelas = AXUIElementCopyAttributeValue(
-                elemento, kAXWindowsAttribute, None
-            )
-            if codigo == kAXErrorSuccess and janelas:
-                return janelas[0]
-        if esperar:
-            time.sleep(ESPERA_ENTRE_TENTATIVAS)
-    return None

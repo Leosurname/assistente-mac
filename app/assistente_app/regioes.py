@@ -1,7 +1,4 @@
-"""Nomes de regiao viram retangulos em pixels.
-
-A Layla escolhe "metade_esquerda"; quem sabe o tamanho real do monitor e a
-camada nativa. A conversao acontece aqui, e so aqui.
+"""Nomes de regiao viram retangulos em pixels, aqui e so aqui.
 
 O sistema de coordenadas e o da API de acessibilidade: origem no canto superior
 esquerdo, y crescendo para baixo. E o mesmo que o backend assume ao conferir se

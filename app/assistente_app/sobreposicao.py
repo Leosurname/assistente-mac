@@ -1,13 +1,9 @@
 """A caixa que aparece sobre a tela.
 
-O detalhe que faz o produto funcionar: o painel **nao rouba o foco**. O usuario
-continua digitando no aplicativo de baixo, e e essa digitacao que serve de
-sinal para a caixa sumir. Um painel que ativa quebraria as duas coisas ao mesmo
-tempo — o usuario perderia o cursor de onde estava, e o sinal de dispensa
-nunca chegaria.
-
-Daí `NSWindowStyleMaskNonactivatingPanel` e o `canBecomeKeyWindow` devolvendo
-falso logo abaixo.
+O painel nao rouba o foco. O usuario continua digitando no aplicativo de baixo,
+e e essa digitacao que serve de sinal para a caixa sumir: um painel que ativa
+tiraria o cursor de onde estava e o sinal de dispensa nunca chegaria. Dai o
+`NSWindowStyleMaskNonactivatingPanel` e o `canBecomeKeyWindow` falso.
 """
 
 from __future__ import annotations
@@ -98,8 +94,6 @@ class Sobreposicao:
         rotulo.setTextColor_(NSColor.whiteColor())
         rotulo.setStringValue_("")
         return rotulo
-
-    # --- o que o coordenador chama ---------------------------------------
 
     def mostrar(self) -> None:
         # orderFrontRegardless, e nao makeKeyAndOrderFront: a caixa aparece sem
