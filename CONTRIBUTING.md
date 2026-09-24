@@ -50,6 +50,10 @@ prático é o que o revisor consegue ler com atenção.
 - Testes com `pytest`; a Layla sempre mockada nos testes
 - Nada de chamada de rede em teste
 
+Como o código é escrito — tamanho de função, comentário, docstring — está no
+[preferencias.md](preferencias.md). Review que corrige estilo vira linha lá,
+no mesmo PR.
+
 Antes de abrir o PR:
 
 ```bash
