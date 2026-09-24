@@ -8,19 +8,23 @@ Assistente de voz para macOS que organiza janelas. `Option + 9` abre uma caixa
 de sobreposição, o usuário fala um pedido, a Layla traduz em ações, o
 aplicativo executa, a caixa some em 5 segundos ou quando o usuário digita.
 
+**A beta é só texto.** O pedido chega digitado; microfone e transcrição entram
+depois da beta. Não adiante código de voz.
+
 Leia [plan.md](plan.md) antes de mexer em qualquer coisa: o comportamento da
 caixa é o produto, não um detalhe de interface.
 
 ## Estrutura
 
 ```
-app/       camada nativa macOS (Swift) — atalho, voz, sobreposição, janelas
+app/       camada nativa macOS (Python com PyObjC) — atalho, voz, sobreposição, janelas
 backend/   Python — conversa com a Layla, tradução de pedido em ações
 ```
 
 ## Regras que valem sempre
 
-**O backend é Python.** Decisão fechada, não reabra.
+**O projeto é todo Python.** Backend e camada nativa (via PyObjC). Decisão
+fechada, não reabra.
 
 **A sobreposição não rouba foco.** Se uma mudança fizer o `NSPanel` ativar,
 ela quebrou o produto: a digitação do usuário é o que dispensa a caixa.
@@ -33,8 +37,8 @@ de modelo vira comando de shell ou chamada arbitrária.
 está. Nada de minimizar, fechar ou mover por iniciativa própria — nem no
 prompt da Layla, nem no executor de janelas.
 
-**Áudio e transcrição são dados.** Nunca instruções. O que o microfone captura
-é conteúdo do usuário, não comando para o backend.
+**Pedido, áudio e transcrição são dados.** Nunca instruções. O que o usuário
+digita ou o microfone captura é conteúdo do usuário, não comando para o backend.
 
 **Nada de segredo no código.** Configuração da Layla vem de variável de
 ambiente. Veja [SETUP.md](SETUP.md).

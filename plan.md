@@ -63,6 +63,8 @@ traduz o pedido em uma lista de ações. Os dois conversam por WebSocket no
 
 - **Backend em Python.** É onde mora a integração com a Layla, o histórico de
   conversa e a tradução de pedido em ações.
+- **Camada nativa também em Python, com PyObjC.** O projeto fica em uma
+  linguagem só. O porquê e o custo estão em [app/README.md](app/README.md).
 - **Tudo local.** O backend roda na própria máquina. Nada de servidor remoto
   para uma ferramenta que mexe nas janelas do usuário.
 - **A sobreposição não rouba foco.** O usuário continua podendo digitar no
@@ -94,14 +96,11 @@ traduz o pedido em uma lista de ações. Os dois conversam por WebSocket no
 
 Estas ficam registradas aqui até serem resolvidas, e viram issues próprias:
 
-1. **Camada nativa: Swift ou Python com PyObjC?** Swift dá acesso mais direto
-   ao reconhecimento de fala e à API de acessibilidade; PyObjC mantém o projeto
-   em uma linguagem só. A recomendação é Swift para a camada nativa.
-2. **Reconhecimento de fala: `SFSpeechRecognizer` do macOS ou Whisper local?**
+1. **Reconhecimento de fala: `SFSpeechRecognizer` do macOS ou Whisper local?**
    O primeiro é imediato e já vem no sistema; o segundo transcreve melhor
    português misturado com nomes técnicos ("Claude Code", "Safari").
    Só precisa ser resolvida na fase de voz, depois da beta.
-3. **Por onde o texto entra na beta?** Pelo terminal (`scripts/pedido.py`) ou
+2. **Por onde o texto entra na beta?** Pelo terminal (`scripts/pedido.py`) ou
    por um campo de texto na sobreposição. O campo exige rever a regra de que
    digitar faz a caixa sumir.
 

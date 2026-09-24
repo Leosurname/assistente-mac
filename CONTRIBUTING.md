@@ -81,11 +81,6 @@ Antes de abrir o PR:
 ruff check . && pytest
 ```
 
-## Swift
-
-- Formatação com `swift-format`
-- Nada de `print` no código final; use o `Logger` do sistema
-
 ## O que nunca entra no repositório
 
 - `.env`, chaves de API, tokens

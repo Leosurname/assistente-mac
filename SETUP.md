@@ -7,7 +7,6 @@
 
 - **macOS 13** ou superior
 - **Python 3.11** ou superior
-- **Xcode** com as ferramentas de linha de comando, para a camada nativa
 - **`llama.cpp`** compilado, com o `llama-server` disponível
 - **Pesos da Layla** em formato GGUF, baixados do HuggingFace (veja abaixo)
 
@@ -116,11 +115,14 @@ em `http://127.0.0.1:8765/health`.
 
 ```bash
 cd app
-open AssistenteMac.xcodeproj
+python3 -m venv .venv
+source .venv/bin/activate
+pip install -r requirements.txt
+python -m assistente_app
 ```
 
-Compile e rode pelo Xcode. O aplicativo vive na barra de menu, sem ícone no
-Dock.
+O aplicativo vive na barra de menu, sem ícone no Dock, e precisa do backend no
+ar. Detalhes em [app/README.md](app/README.md).
 
 ## Variáveis de ambiente
 
@@ -193,5 +195,6 @@ Verifique em Ajustes do Sistema ▸ Teclado ▸ Atalhos de Teclado.
 Acessibilidade. Depois de conceder, reinicie o aplicativo — o macOS só relê a
 permissão na inicialização.
 
-**A transcrição fica vazia.** Confira o microfone de entrada nos Ajustes de Som
-e a permissão de Reconhecimento de Fala.
+**A transcrição fica vazia** (fase de voz, depois da beta). Confira o
+microfone de entrada nos Ajustes de Som e a permissão de Reconhecimento de
+Fala.
