@@ -103,10 +103,12 @@ pip install -r requirements.txt
 Para rodar:
 
 ```bash
-python -m assistente.server
+python -m assistente.servidor
 ```
 
-O backend sobe em `localhost` e só aceita conexões locais.
+O backend sobe em `127.0.0.1` e recusa qualquer conexão que não venha da
+própria máquina. O WebSocket fica em `ws://127.0.0.1:8765/ws` e o health check
+em `http://127.0.0.1:8765/health`.
 
 ## Camada nativa
 
@@ -135,6 +137,7 @@ cp .env.example .env
 | `LAYLA_LIMITE_CONTEXTO` | não | Tokens de contexto (padrão: 4096) |
 | `LAYLA_TEMPERATURA` | não | Temperatura da geração (padrão: 0.2) |
 | `ASSISTENTE_PORTA` | não | Porta do backend (padrão: 8765) |
+| `ASSISTENTE_VALIDADE_SESSAO` | não | Segundos de vida da sessão (padrão: 120) |
 | `ASSISTENTE_TIMEOUT_CAIXA` | não | Segundos até a caixa sumir (padrão: 5) |
 | `LOG_LEVEL` | não | `DEBUG`, `INFO`, `WARNING` (padrão: `INFO`) |
 
