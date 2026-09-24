@@ -1,0 +1,19 @@
+[project]
+name = "assistente-mac-app"
+version = "0.1.0"
+description = "Camada nativa do Assistente Mac: atalho, voz, sobreposicao e janelas"
+requires-python = ">=3.11"
+
+[tool.ruff]
+line-length = 88
+target-version = "py311"
+extend-exclude = [".venv"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B", "SIM"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]
+asyncio_mode = "auto"
+addopts = "-q"
