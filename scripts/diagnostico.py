@@ -1,7 +1,4 @@
-"""Confere o que precisa estar de pé antes do primeiro teste de verdade.
-
-`python scripts/diagnostico.py`
-"""
+# Confere o que precisa estar de pé antes do primeiro teste de verdade.
 
 from __future__ import annotations
 
@@ -48,13 +45,8 @@ async def layla_no_ar(cliente: httpx.AsyncClient) -> str:
     return ", ".join(modelos)
 
 
+# O teste que decide se o backend se sustenta; o porquê está no SETUP.md.
 async def gramatica_funciona(cliente: httpx.AsyncClient) -> str:
-    """O teste que decide se o backend inteiro se sustenta.
-
-    Os fine-tunes da Layla são feitos para conversa. Todo o desenho do backend
-    aposta que o `llama-server` restringe a decodificação pelo `json_schema` e
-    devolve JSON válido mesmo assim. Se esta checagem falhar, a aposta caiu.
-    """
     corpo = {
         "messages": [
             {"role": "system", "content": "Responda em JSON."},
@@ -90,8 +82,8 @@ async def backend_no_ar(cliente: httpx.AsyncClient) -> str:
     return f"estado {saude.get('estado')}, Layla {saude.get('layla')}"
 
 
-def acessibilidade() -> str:
-    """Sem esta permissão o Option+9 nunca chega."""
+# Sem esta permissão o Option+9 nunca chega.
+async def acessibilidade() -> str:
     try:
         from ApplicationServices import AXIsProcessTrusted
     except ImportError as erro:
@@ -111,10 +103,9 @@ async def principal() -> int:
             ("llama-server", layla_no_ar(cliente)),
             ("decodificação restrita", gramatica_funciona(cliente)),
             ("backend", backend_no_ar(cliente)),
+            ("acessibilidade", acessibilidade()),
         ):
             problemas += await _mostrar(nome, checagem)
-
-    problemas += _mostrar_sincrono("acessibilidade", acessibilidade)
     print()
     print("tudo pronto" if not problemas else f"{problemas} item(ns) a resolver")
     return 1 if problemas else 0
@@ -123,15 +114,6 @@ async def principal() -> int:
 async def _mostrar(nome: str, checagem) -> int:  # noqa: ANN001
     try:
         print(f"  ok   {nome}: {await checagem}")
-    except Exception as erro:  # noqa: BLE001
-        print(f"  ERRO {nome}: {_curto(erro)}")
-        return 1
-    return 0
-
-
-def _mostrar_sincrono(nome: str, checagem) -> int:  # noqa: ANN001
-    try:
-        print(f"  ok   {nome}: {checagem()}")
     except Exception as erro:  # noqa: BLE001
         print(f"  ERRO {nome}: {_curto(erro)}")
         return 1
