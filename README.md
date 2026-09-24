@@ -1,3 +1,46 @@
 # Assistente Mac
 
-Projeto em desenvolvimento.
+Um assistente de voz que organiza a tela do seu Mac.
+
+Aperte `Option + 9`, fale o que você quer — *"terminal e Safari, e já deixa o
+Claude Code aberto"* — e as janelas se arrumam sozinhas. A caixa some depois de
+5 segundos, ou assim que você voltar a digitar.
+
+> **Status:** em construção. Nenhuma etapa foi implementada ainda; o que existe
+> por enquanto é a documentação.
+
+## Como funciona
+
+1. `Option + 9` — o assistente começa a ouvir e uma caixa de texto aparece
+   sobre a tela, sem tirar o foco do que você estava fazendo.
+2. Você fala o pedido. A transcrição aparece na caixa em tempo real.
+3. A [Layla](docs/) interpreta o pedido e devolve uma lista de ações.
+4. O assistente abre os aplicativos, posiciona as janelas e responde
+   "concluído".
+5. A caixa some sozinha: 5 segundos sem pedido novo, ou quando você digita, ou
+   com `Esc`.
+
+O detalhamento do produto está em [plan.md](plan.md).
+
+## Estrutura
+
+| Parte | Linguagem | Responsabilidade |
+|---|---|---|
+| Camada nativa | Swift (a confirmar) | Atalho global, microfone, caixa, controle de janelas |
+| Backend | Python | Conversa com a Layla, tradução de pedido em ações |
+
+A divisão e o porquê dela estão em [ARCHITECTURE.md](ARCHITECTURE.md).
+
+## Começando
+
+Pré-requisitos, instalação e variáveis de ambiente: [SETUP.md](SETUP.md).
+
+## Contribuindo
+
+Padrões de branch, commit e PR: [CONTRIBUTING.md](CONTRIBUTING.md).
+
+## Requisitos do sistema
+
+- macOS 13 ou superior
+- Python 3.11 ou superior
+- Permissões de **Acessibilidade**, **Microfone** e **Reconhecimento de fala**
