@@ -144,6 +144,20 @@ cp .env.example .env
 O `.env` está no `.gitignore` e nunca deve ser versionado. Nenhuma dessas
 variáveis carrega segredo: a Layla roda no `localhost` e não pede chave.
 
+## Testando sem microfone
+
+```bash
+python scripts/pedido.py "quero terminal e safari"
+python scripts/pedido.py --executar "quero terminal e safari"
+```
+
+Manda o pedido ao backend por texto e mostra as ações que a Layla devolveu.
+Sem `--executar`, nada se mexe: serve para ver o que ela entendeu antes de
+deixar o programa mover janela.
+
+É o caminho para testar Layla, tradução e janelas sem depender da permissão de
+microfone, que exige um bundle `.app` que o projeto ainda não tem.
+
 ## Verificando que funcionou
 
 1. Suba o backend. Ele deve responder em `http://localhost:8765/health`.
