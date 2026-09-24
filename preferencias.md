@@ -16,6 +16,9 @@ lógica no meio da prosa.
 Comente o **porquê**, e só quando ele não estiver no código. O diff já mostra o
 quê.
 
+Os comentários devem ser feitos com `#`. Nada de docstring, nem em módulo nem
+em função.
+
 ```python
 # Bom: o motivo não está no código.
 # Posição antes de tamanho: o macOS empurra a janela de volta para dentro
@@ -29,11 +32,11 @@ abrir(app)
 Não escreva:
 
 - comentário que narra a linha seguinte;
-- docstring em função cujo nome já diz tudo (`def parar()`, `def ocultar()`);
-- seção de docstring explicando arquitetura — isso é papel do `ARCHITECTURE.md`;
+- comentário em função cujo nome já diz tudo (`def parar()`, `def ocultar()`);
+- comentário explicando arquitetura — isso é papel do `ARCHITECTURE.md`;
 - comentário de separação (`# --- apoio ---`) em arquivo curto.
 
-Um módulo pode ter uma frase no topo dizendo o que ele faz. Uma frase.
+Um módulo pode ter uma frase no topo, com `#`, dizendo o que ele faz. Uma frase.
 
 ## Tamanho
 
@@ -41,7 +44,7 @@ Um módulo pode ter uma frase no topo dizendo o que ele faz. Uma frase.
 |---|---|
 | Módulo | 150 linhas |
 | Função | 20 linhas |
-| Docstring de módulo | 1 a 3 linhas |
+| Comentário de topo do módulo | 1 a 3 linhas |
 
 Não são regras de linter, são sinais. Passar do limite quer dizer "olhe de
 novo", não "está proibido". Se a coisa é mesmo complexa, passe — e o comentário

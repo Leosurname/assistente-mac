@@ -22,6 +22,8 @@ O assistente não funciona sem estas três, concedidas em
 | Microfone | Ouvir o pedido |
 | Reconhecimento de Fala | Transcrever o que foi falado |
 
+Na beta, que é só texto, basta Acessibilidade.
+
 Na primeira execução o sistema pergunta. Se você negar por engano, precisa
 conceder na mão nos Ajustes — o macOS não pergunta de novo.
 
@@ -143,6 +145,20 @@ cp .env.example .env
 
 O `.env` está no `.gitignore` e nunca deve ser versionado. Nenhuma dessas
 variáveis carrega segredo: a Layla roda no `localhost` e não pede chave.
+
+## Fazendo um pedido (beta)
+
+A beta é só texto; voz vem numa fase seguinte.
+
+```bash
+python scripts/pedido.py "quero terminal e safari"
+python scripts/pedido.py --executar "quero terminal e safari"
+```
+
+Manda o pedido ao backend e mostra as ações que a Layla devolveu. Sem
+`--executar`, nada se mexe: serve para ver o que ela entendeu antes de deixar
+o programa mover janela. `--tela-falsa` usa um retrato fixo, para rodar fora
+do macOS.
 
 ## Verificando que funcionou
 
