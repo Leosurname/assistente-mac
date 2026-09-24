@@ -70,6 +70,13 @@ entra no mesmo commit ou PR do trabalho que originou a preferência.
 
 Na dúvida, escreva: preferência dita em conversa morre no fim da sessão.
 
+**Mexa só onde foi pedido.** Confira `git status --short` antes de commitar, e
+prefira `git add <caminhos>` a `git add -A`. Diff com arquivo que você não
+escreveu quer dizer base velha, não mudança sua.
+
+**Quebre o trabalho.** Vários PRs pequenos e médios, não poucos grandes. O
+tamanho está no [CONTRIBUTING.md](CONTRIBUTING.md).
+
 ## Decisões ainda em aberto
 
 Estão listadas em [plan.md](plan.md), na seção "Decisões em aberto". Se o seu
