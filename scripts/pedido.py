@@ -1,8 +1,7 @@
-"""Manda um pedido ao backend por texto: o modo da beta, antes da voz.
-
-python scripts/pedido.py "quero terminal e safari"
-python scripts/pedido.py --executar "quero terminal e safari"
-"""
+# Manda um pedido ao backend por texto: o modo da beta, antes da voz.
+#
+# python scripts/pedido.py "quero terminal e safari"
+# python scripts/pedido.py --executar "quero terminal e safari"
 
 from __future__ import annotations
 
@@ -26,8 +25,8 @@ def endereco() -> str:
     return os.getenv("ASSISTENTE_BACKEND") or "ws://127.0.0.1:8765/ws"
 
 
+# Retrato da máquina, ou um de mentira quando o PyObjC não está aqui.
 def retrato(real: bool) -> dict:
-    """Retrato da máquina, ou um de mentira quando o PyObjC não está aqui."""
     if not real:
         return TELA_DE_MENTIRA
     sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "app"))
@@ -67,7 +66,9 @@ def executar(resposta: dict) -> None:
 
 
 def principal() -> int:
-    analisador = argparse.ArgumentParser(description=__doc__)
+    analisador = argparse.ArgumentParser(
+        description="Manda um pedido ao backend por texto."
+    )
     analisador.add_argument("texto", help="o pedido, em linguagem natural")
     analisador.add_argument(
         "--executar",
