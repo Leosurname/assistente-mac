@@ -70,6 +70,20 @@ traduz o pedido em uma lista de ações. Os dois conversam por WebSocket no
 - **A Layla não executa nada.** Ela devolve ações; quem executa é o aplicativo
   nativo, que valida cada uma antes de rodar. Modelo de linguagem não recebe
   acesso direto ao sistema.
+- **A Layla roda local.** Nada de chamada de rede para interpretar o pedido.
+  A Layla são os pesos publicados em
+  [huggingface.co/l3utterfly](https://huggingface.co/l3utterfly), em formato
+  GGUF, servidos na própria máquina pelo `llama-server` do llama.cpp — que
+  expõe uma API compatível com OpenAI. Rodar local tira a chave de API da
+  configuração, mantém as transcrições de voz dentro do Mac e deixa a latência
+  sob controle: o plano tem meta de menos de 3 segundos do fim da fala até as
+  janelas no lugar, e uma ida à internet gasta boa parte desse orçamento.
+- **A resposta da Layla é restringida por gramática.** Os fine-tunes da Layla
+  são feitos para conversa, não para saída estruturada. Pedir JSON no prompt e
+  torcer não serve para um backend que depende de uma lista de ações bem
+  formada, então a saída é forçada por `json_schema`/GBNF no `llama-server`.
+  A validação do backend continua existindo: gramática garante formato, não
+  garante sentido.
 - **Aplicativo não pedido fica em paz.** O assistente só mexe no que foi
   citado no pedido. Nada de minimizar, fechar ou mandar para outra área de
   trabalho por conta própria. Quem pede "terminal e Safari" está dizendo o que
@@ -83,9 +97,7 @@ Estas ficam registradas aqui até serem resolvidas, e viram issues próprias:
 1. **Camada nativa: Swift ou Python com PyObjC?** Swift dá acesso mais direto
    ao reconhecimento de fala e à API de acessibilidade; PyObjC mantém o projeto
    em uma linguagem só. A recomendação é Swift para a camada nativa.
-2. **A Layla roda local ou remota?** Muda a latência aceitável no passo 4 e a
-   forma de autenticação.
-3. **Reconhecimento de fala: `SFSpeechRecognizer` do macOS ou Whisper local?**
+2. **Reconhecimento de fala: `SFSpeechRecognizer` do macOS ou Whisper local?**
    O primeiro é imediato e já vem no sistema; o segundo transcreve melhor
    português misturado com nomes técnicos ("Claude Code", "Safari").
 
