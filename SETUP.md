@@ -180,5 +180,6 @@ Verifique em Ajustes do Sistema ▸ Teclado ▸ Atalhos de Teclado.
 Acessibilidade. Depois de conceder, reinicie o aplicativo — o macOS só relê a
 permissão na inicialização.
 
-**A transcrição fica vazia.** Confira o microfone de entrada nos Ajustes de Som
-e a permissão de Reconhecimento de Fala.
+**A transcrição fica vazia** (fase de voz, depois da beta). Confira o
+microfone de entrada nos Ajustes de Som e a permissão de Reconhecimento de
+Fala.
