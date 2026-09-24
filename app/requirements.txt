@@ -1,0 +1,13 @@
+# Camada nativa. Roda so no macOS: PyObjC e a ponte para AppKit, Quartz,
+# AVFoundation, Speech e a API de acessibilidade.
+pyobjc-framework-Cocoa>=10.3
+pyobjc-framework-Quartz>=10.3
+pyobjc-framework-AVFoundation>=10.3
+pyobjc-framework-Speech>=10.3
+pyobjc-framework-ApplicationServices>=10.3
+websockets>=12.0
+
+# Desenvolvimento
+pytest>=8.0
+pytest-asyncio>=0.23
+ruff>=0.5
