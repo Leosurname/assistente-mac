@@ -1,10 +1,7 @@
-"""Manda um pedido ao backend por texto, sem microfone.
+"""Manda um pedido ao backend por texto: o modo da beta, antes da voz.
 
-    python scripts/pedido.py "quero terminal e safari"
-    python scripts/pedido.py --executar "quero terminal e safari"
-
-Serve para testar Layla, tradução e janelas sem depender da permissão de
-microfone, que exige um bundle `.app` que o projeto ainda não tem.
+python scripts/pedido.py "quero terminal e safari"
+python scripts/pedido.py --executar "quero terminal e safari"
 """
 
 from __future__ import annotations
@@ -71,7 +68,7 @@ def executar(resposta: dict) -> None:
 
 def principal() -> int:
     analisador = argparse.ArgumentParser(description=__doc__)
-    analisador.add_argument("texto", help="o pedido, como você falaria")
+    analisador.add_argument("texto", help="o pedido, em linguagem natural")
     analisador.add_argument(
         "--executar",
         action="store_true",
