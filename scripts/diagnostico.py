@@ -43,7 +43,7 @@ async def layla_no_ar(cliente: httpx.AsyncClient) -> str:
     resposta = await cliente.get(f"{url_da_layla()}/v1/models")
     resposta.raise_for_status()
     modelos = [m.get("id", "?") for m in resposta.json().get("data", [])]
-    if not modelos:
+    if (not modelos):
         raise Falha("o servidor respondeu, mas não há modelo carregado")
     return ", ".join(modelos)
 
@@ -77,7 +77,7 @@ async def gramatica_funciona(cliente: httpx.AsyncClient) -> str:
         corpo_lido = json.loads(bruta)
     except ValueError as erro:
         raise Falha(f"a resposta não é JSON: {bruta[:120]!r}") from erro
-    if not isinstance(corpo_lido, dict) or "acoes" not in corpo_lido:
+    if (not isinstance(corpo_lido, dict) or "acoes" not in corpo_lido):
         raise Falha(f"JSON válido, mas fora do esquema: {bruta[:120]!r}")
     return "o servidor respeitou o esquema"
 
@@ -96,7 +96,7 @@ def acessibilidade() -> str:
         from ApplicationServices import AXIsProcessTrusted
     except ImportError as erro:
         raise Falha("PyObjC não instalado; rode dentro do ambiente do app") from erro
-    if not AXIsProcessTrusted():
+    if (not AXIsProcessTrusted()):
         raise Falha(
             "não concedida. Ajustes do Sistema ▸ Privacidade e Segurança ▸ "
             "Acessibilidade, e reabra o programa"
@@ -143,5 +143,5 @@ def _curto(erro: Exception) -> str:
     return texto if len(texto) < 160 else texto[:157] + "..."
 
 
-if __name__ == "__main__":
+if (__name__ == "__main__"):
     sys.exit(asyncio.run(principal()))
