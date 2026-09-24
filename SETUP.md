@@ -8,7 +8,8 @@
 - **macOS 13** ou superior
 - **Python 3.11** ou superior
 - **Xcode** com as ferramentas de linha de comando, para a camada nativa
-- Acesso à **Layla** (chave de API, se for remota; o binário, se for local)
+- **`llama.cpp`** compilado, com o `llama-server` disponível
+- **Pesos da Layla** em formato GGUF, baixados do HuggingFace (veja abaixo)
 
 ## Permissões do macOS
 
@@ -23,6 +24,72 @@ O assistente não funciona sem estas três, concedidas em
 
 Na primeira execução o sistema pergunta. Se você negar por engano, precisa
 conceder na mão nos Ajustes — o macOS não pergunta de novo.
+
+## A Layla
+
+A Layla não é um servidor próprio: é um conjunto de pesos em formato **GGUF**
+publicados em [huggingface.co/l3utterfly](https://huggingface.co/l3utterfly).
+Quem serve esses pesos é o `llama-server` do
+[llama.cpp](https://github.com/ggml-org/llama.cpp), rodando na sua máquina.
+
+### 1. Instale o llama.cpp
+
+```bash
+brew install llama.cpp
+```
+
+Ou compile do código-fonte, se preferir controlar as opções de build.
+
+### 2. Baixe os pesos
+
+O modelo recomendado é o `mistral-7b-v0.1-layla-v4-chatml`, quantizado em
+`Q4_K_M`. É o fine-tune layla mais capaz em formato ChatML, que é o que lida
+melhor com conversa estruturada.
+
+```bash
+mkdir -p ~/modelos
+huggingface-cli download l3utterfly/mistral-7b-v0.1-layla-v4-chatml-gguf \
+  mistral-7b-v0.1-layla-v4-chatml-Q4_K_M.gguf \
+  --local-dir ~/modelos
+```
+
+Alternativa leve, para quem quiser menos latência em troca de menos
+capacidade: `l3utterfly/Qwen1.5-1.8B-layla-v4-gguf`.
+
+### 3. Suba o servidor
+
+```bash
+llama-server \
+  --model ~/modelos/mistral-7b-v0.1-layla-v4-chatml-Q4_K_M.gguf \
+  --host 127.0.0.1 --port 8080 \
+  --ctx-size 4096
+```
+
+O `llama-server` expõe uma API compatível com a da OpenAI em
+`http://localhost:8080/v1/chat/completions`, com streaming por SSE. É por aí
+que o backend fala com a Layla. Não há chave de API: o servidor é local.
+
+Para conferir que subiu:
+
+```bash
+curl http://localhost:8080/v1/models
+```
+
+### Por que a saída é restrita a um esquema
+
+Os fine-tunes layla são voltados a conversa e roleplay, não a saída
+estruturada. Pedir JSON no texto do prompt e torcer dá errado com frequência, e
+o backend depende de uma lista de ações bem formada.
+
+Por isso o backend manda o campo `response_format` com um `json_schema` em todo
+pedido de tradução: o `llama-server` deriva uma gramática do esquema e restringe
+a decodificação, de modo que a resposta é sempre um JSON válido no formato do
+catálogo de ações. O esquema fica no código do backend, junto da montagem do
+prompt.
+
+Formato garantido não é sentido garantido. A validação do lado do backend
+continua valendo: catálogo fechado, aplicativos que existem, coordenadas que
+cabem na tela e a regra de não mexer em aplicativo que não foi pedido.
 
 ## Backend
 
@@ -61,14 +128,18 @@ cp .env.example .env
 
 | Variável | Obrigatória | Para quê |
 |---|---|---|
-| `LAYLA_API_URL` | sim | Endereço da Layla |
-| `LAYLA_API_KEY` | se remota | Autenticação |
-| `LAYLA_MODEL` | não | Modelo a usar |
+| `LAYLA_URL` | não | Endereço do `llama-server` (padrão: `http://127.0.0.1:8080`) |
+| `LAYLA_MODEL` | não | Nome do modelo a pedir ao servidor |
+| `LAYLA_TIMEOUT` | não | Segundos de espera por resposta (padrão: 30) |
+| `LAYLA_TENTATIVAS` | não | Tentativas antes de desistir (padrão: 3) |
+| `LAYLA_LIMITE_CONTEXTO` | não | Tokens de contexto (padrão: 4096) |
+| `LAYLA_TEMPERATURA` | não | Temperatura da geração (padrão: 0.2) |
 | `ASSISTENTE_PORTA` | não | Porta do backend (padrão: 8765) |
 | `ASSISTENTE_TIMEOUT_CAIXA` | não | Segundos até a caixa sumir (padrão: 5) |
 | `LOG_LEVEL` | não | `DEBUG`, `INFO`, `WARNING` (padrão: `INFO`) |
 
-O `.env` está no `.gitignore` e nunca deve ser versionado.
+O `.env` está no `.gitignore` e nunca deve ser versionado. Nenhuma dessas
+variáveis carrega segredo: a Layla roda no `localhost` e não pede chave.
 
 ## Verificando que funcionou
 
