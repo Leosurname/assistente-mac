@@ -103,6 +103,7 @@ não existe motivo para alguém de fora alcançar isso.
 ## Organização
 
 ```
+main.py               unico ponto de entrada: monta e sobe o aplicativo
 assistente/
   configuracao.py     leitura das variaveis de ambiente
   servidor.py         FastAPI: WebSocket /ws e health check /health
@@ -127,7 +128,7 @@ provedor é escrever outra implementação do protocolo.
 ## Rodando
 
 ```bash
-cd backend && python -m assistente.servidor
+cd backend && python main.py
 ```
 
 Logs em `LOG_LEVEL`. A transcrição não entra em log fora do `DEBUG`: o que o

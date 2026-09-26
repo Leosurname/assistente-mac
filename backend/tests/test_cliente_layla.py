@@ -4,17 +4,8 @@ from __future__ import annotations
 
 import httpx
 import pytest
-from assistente.configuracao import ConfiguracaoLayla
-from assistente.layla import (
-    ClienteDeLLM,
-    ClienteLayla,
-    ErroDeIndisponibilidade,
-    ErroDeLimiteDeUso,
-    ErroDeResposta,
-    ErroDeTempoEsgotado,
-    Mensagem,
-    formato_json,
-)
+from assistente import configuracao as configuracao_modulo
+from assistente.layla import cliente, erros, interface
 
 from tests.apoio import (
     LaylaDeMentira,
@@ -25,8 +16,8 @@ from tests.apoio import (
 )
 
 PEDIDO = [
-    Mensagem("sistema", "Voce traduz pedidos em acoes."),
-    Mensagem("usuario", "quero terminal e safari"),
+    interface.Mensagem("sistema", "Voce traduz pedidos em acoes."),
+    interface.Mensagem("usuario", "quero terminal e safari"),
 ]
 
 # Sem espera entre tentativas: o teste exercita a logica, nao o relogio.
@@ -41,9 +32,11 @@ def _nao_espere_entre_tentativas(monkeypatch: pytest.MonkeyPatch):
     monkeypatch.setattr("assistente.layla.cliente.asyncio.sleep", dormir_de_mentira)
 
 
-def _cliente(layla: LaylaDeMentira, **ajustes) -> ClienteLayla:
-    configuracao = ConfiguracaoLayla(url="http://127.0.0.1:8080", **ajustes)
-    return ClienteLayla(configuracao, cliente_http=layla.cliente())
+def _cliente(layla: LaylaDeMentira, **ajustes) -> cliente.ClienteLayla:
+    configuracao = configuracao_modulo.ConfiguracaoLayla(
+        url="http://127.0.0.1:8080", **ajustes
+    )
+    return cliente.ClienteLayla(configuracao, cliente_http=layla.cliente())
 
 
 # ── contrato ─────────────────────────────────────────────────────────────────
@@ -53,7 +46,7 @@ def test_o_cliente_satisfaz_a_interface():
     """O resto do backend depende so da interface, nunca da classe concreta."""
     layla = LaylaDeMentira([resposta_de_conversa("ok")])
 
-    assert isinstance(_cliente(layla), ClienteDeLLM)
+    assert isinstance(_cliente(layla), interface.ClienteDeLLM)
 
 
 # ── conversa simples ─────────────────────────────────────────────────────────
@@ -117,7 +110,7 @@ async def test_repassa_o_formato_de_resposta_restrito():
     esquema = {"type": "object", "properties": {"acoes": {"type": "array"}}}
 
     await _cliente(layla).conversar(
-        PEDIDO, formato_resposta=formato_json("acoes", esquema)
+        PEDIDO, formato_resposta=interface.formato_json("acoes", esquema)
     )
 
     assert layla.corpos[0]["response_format"]["json_schema"]["schema"] == esquema
@@ -126,8 +119,8 @@ async def test_repassa_o_formato_de_resposta_restrito():
 async def test_o_historico_e_cortado_antes_de_sair():
     layla = LaylaDeMentira([resposta_de_conversa("ok")])
     longo = [
-        Mensagem("sistema", "regras"),
-        *[Mensagem("usuario", "x" * 400) for _ in range(20)],
+        interface.Mensagem("sistema", "regras"),
+        *[interface.Mensagem("usuario", "x" * 400) for _ in range(20)],
     ]
 
     await _cliente(layla, limite_contexto=200).conversar(longo)
@@ -177,14 +170,14 @@ async def test_transmitir_para_no_done_e_ignora_linhas_vazias():
 async def test_transmitir_avisa_quando_a_layla_esta_fora():
     layla = LaylaDeMentira([erro_de_conexao])
 
-    with pytest.raises(ErroDeIndisponibilidade):
+    with pytest.raises(erros.ErroDeIndisponibilidade):
         _ = [p async for p in _cliente(layla).transmitir(PEDIDO)]
 
 
 async def test_transmitir_avisa_quando_o_status_e_de_erro():
     layla = LaylaDeMentira([httpx.Response(503)])
 
-    with pytest.raises(ErroDeIndisponibilidade):
+    with pytest.raises(erros.ErroDeIndisponibilidade):
         _ = [p async for p in _cliente(layla).transmitir(PEDIDO)]
 
 
@@ -203,7 +196,7 @@ async def test_tenta_de_novo_depois_de_uma_falha_transitoria():
 async def test_desiste_depois_do_numero_de_tentativas_configurado():
     layla = LaylaDeMentira([erro_de_conexao])
 
-    with pytest.raises(ErroDeIndisponibilidade) as capturado:
+    with pytest.raises(erros.ErroDeIndisponibilidade) as capturado:
         await _cliente(layla, tentativas=3).conversar(PEDIDO)
 
     assert len(layla.pedidos) == 3
@@ -213,7 +206,7 @@ async def test_desiste_depois_do_numero_de_tentativas_configurado():
 async def test_tempo_esgotado_vira_erro_proprio_com_mensagem_clara():
     layla = LaylaDeMentira([tempo_esgotado])
 
-    with pytest.raises(ErroDeTempoEsgotado) as capturado:
+    with pytest.raises(erros.ErroDeTempoEsgotado) as capturado:
         await _cliente(layla, tentativas=2).conversar(PEDIDO)
 
     assert capturado.value.mensagem_amigavel == "A Layla demorou demais para responder."
@@ -222,7 +215,7 @@ async def test_tempo_esgotado_vira_erro_proprio_com_mensagem_clara():
 async def test_excesso_de_pedidos_vira_erro_de_limite():
     layla = LaylaDeMentira([httpx.Response(429)])
 
-    with pytest.raises(ErroDeLimiteDeUso):
+    with pytest.raises(erros.ErroDeLimiteDeUso):
         await _cliente(layla, tentativas=2).conversar(PEDIDO)
 
 
@@ -230,7 +223,7 @@ async def test_erro_de_cliente_nao_e_repetido():
     """Repetir um pedido malformado so gasta o orcamento de 3 segundos."""
     layla = LaylaDeMentira([httpx.Response(400)])
 
-    with pytest.raises(ErroDeIndisponibilidade):
+    with pytest.raises(erros.ErroDeIndisponibilidade):
         await _cliente(layla, tentativas=3).conversar(PEDIDO)
 
     assert len(layla.pedidos) == 1
@@ -239,14 +232,14 @@ async def test_erro_de_cliente_nao_e_repetido():
 async def test_resposta_sem_conteudo_vira_erro_de_resposta():
     layla = LaylaDeMentira([httpx.Response(200, json={"choices": []})])
 
-    with pytest.raises(ErroDeResposta):
+    with pytest.raises(erros.ErroDeResposta):
         await _cliente(layla).conversar(PEDIDO)
 
 
 async def test_resposta_que_nao_e_json_vira_erro_de_resposta():
     layla = LaylaDeMentira([httpx.Response(200, content=b"nao sou json")])
 
-    with pytest.raises(ErroDeResposta):
+    with pytest.raises(erros.ErroDeResposta):
         await _cliente(layla).conversar(PEDIDO)
 
 

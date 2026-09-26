@@ -6,25 +6,25 @@ import json
 import logging
 from dataclasses import dataclass
 
-from assistente import prompt
-from assistente.acoes import esquema_da_resposta
-from assistente.layla.erros import ErroDaLLM, ErroDeResposta
-from assistente.layla.interface import ClienteDeLLM, formato_json
-from assistente.sessao import Sessao
-from assistente.tela import RetratoDaTela
-from assistente.validacao import AcaoValidada, Recusa, validar_acoes
+from assistente import acoes, prompt, validacao
+from assistente import sessao as sessao_modulo
+from assistente import tela as tela_modulo
+from assistente.layla import erros, interface
 
 registrador = logging.getLogger(__name__)
 
 FALA_PADRAO = "concluído"
 FALA_SEM_ACAO = "não entendi o pedido"
 
+# Reexportado: servidor.py trata ErroDaLLM como erro conhecido de traducao.
+ErroDaLLM = erros.ErroDaLLM
+
 
 @dataclass(frozen=True)
 class Traducao:
-    acoes: tuple[AcaoValidada, ...]
+    acoes: tuple[validacao.AcaoValidada, ...]
     fala: str
-    recusadas: tuple[Recusa, ...] = ()
+    recusadas: tuple[validacao.Recusa, ...] = ()
 
     def para_dicionario(self) -> dict:
         return {
@@ -36,29 +36,31 @@ class Traducao:
 
 async def traduzir(
     transcricao: str,
-    tela: RetratoDaTela,
-    sessao: Sessao,
-    llm: ClienteDeLLM,
+    tela: tela_modulo.RetratoDaTela,
+    sessao: sessao_modulo.Sessao,
+    llm: interface.ClienteDeLLM,
 ) -> Traducao:
     """Manda o pedido para a Layla e devolve so o que passou pela validacao."""
     mensagens = prompt.montar(transcricao, tela, list(sessao.historico))
 
-    bruta = await llm.conversar(
-        mensagens,
-        formato_resposta=formato_json("resposta_do_assistente", esquema_da_resposta()),
+    formato_resposta = interface.formato_json(
+        "resposta_do_assistente", acoes.esquema_da_resposta()
     )
+    bruta = await llm.conversar(mensagens, formato_resposta=formato_resposta)
 
     try:
         corpo = json.loads(bruta)
     except ValueError as erro:
-        raise ErroDeResposta(f"A Layla nao devolveu JSON: {bruta!r}") from erro
+        raise erros.ErroDeResposta(f"A Layla nao devolveu JSON: {bruta!r}") from erro
     if not isinstance(corpo, dict):
-        raise ErroDeResposta(f"A Layla devolveu {type(corpo).__name__}, nao um objeto")
+        raise erros.ErroDeResposta(
+            f"A Layla devolveu {type(corpo).__name__}, nao um objeto"
+        )
 
     # O historico conta: "agora joga o Safari pra direita" se apoia no pedido
     # anterior, e o Safari continua sendo aplicativo que o usuario citou.
     falas_do_usuario = [*sessao.pedidos, transcricao]
-    resultado = validar_acoes(
+    resultado = validacao.validar_acoes(
         corpo.get("acoes"), tela=tela, textos_do_usuario=falas_do_usuario
     )
 

@@ -7,10 +7,9 @@ from collections.abc import AsyncIterator, Sequence
 from typing import Any
 
 import pytest
-from assistente.layla.erros import ErroDeIndisponibilidade, ErroDeTempoEsgotado
-from assistente.layla.interface import ClienteDeLLM, Mensagem
-from assistente.servidor import criar_aplicativo, e_local
-from assistente.sessao import RegistroDeSessoes
+from assistente import servidor
+from assistente import sessao as sessao_modulo
+from assistente.layla import erros, interface
 from fastapi.testclient import TestClient
 
 TELA = {
@@ -27,7 +26,7 @@ class LaylaDeMentira:
     def __init__(self, respostas: Sequence[Any], disponivel: bool = True):
         self._respostas = list(respostas)
         self.disponivel = disponivel
-        self.chamadas: list[list[Mensagem]] = []
+        self.chamadas: list[list[interface.Mensagem]] = []
 
     async def conversar(self, mensagens, **_: Any) -> str:
         self.chamadas.append(list(mensagens))
@@ -53,13 +52,15 @@ def _cliente(llm: LaylaDeMentira, **kwargs) -> TestClient:
     # O TestClient se apresenta como "testclient" por padrao, e o servidor so
     # aceita conexao local: o teste precisa dizer de onde esta chamando.
     return TestClient(
-        criar_aplicativo(llm=llm, sessoes=RegistroDeSessoes(**kwargs)),
+        servidor.criar_aplicativo(
+            llm=llm, sessoes=sessao_modulo.RegistroDeSessoes(**kwargs)
+        ),
         client=("127.0.0.1", 50000),
     )
 
 
 def test_o_cliente_de_mentira_cumpre_a_interface():
-    assert isinstance(LaylaDeMentira([]), ClienteDeLLM)
+    assert isinstance(LaylaDeMentira([]), interface.ClienteDeLLM)
 
 
 # ── health check ─────────────────────────────────────────────────────────────
@@ -246,8 +247,8 @@ def test_pedido_malformado_nao_chega_a_incomodar_a_layla():
 @pytest.mark.parametrize(
     ("erro", "trecho"),
     [
-        (ErroDeTempoEsgotado("demorou"), "demorou demais"),
-        (ErroDeIndisponibilidade("fora"), "não está respondendo"),
+        (erros.ErroDeTempoEsgotado("demorou"), "demorou demais"),
+        (erros.ErroDeIndisponibilidade("fora"), "não está respondendo"),
     ],
 )
 def test_falha_da_layla_vira_erro_com_mensagem_clara(erro: Exception, trecho: str):
@@ -276,18 +277,20 @@ def test_resposta_da_layla_que_nao_e_json_vira_erro():
 
 @pytest.mark.parametrize("endereco", ["127.0.0.1", "::1", "localhost"])
 def test_enderecos_locais_sao_aceitos(endereco: str):
-    assert e_local(endereco)
+    assert servidor.e_local(endereco)
 
 
 @pytest.mark.parametrize("endereco", ["192.168.0.10", "10.0.0.1", "8.8.8.8", None])
 def test_enderecos_de_fora_sao_recusados(endereco):
-    assert not e_local(endereco)
+    assert not servidor.e_local(endereco)
 
 
 def test_o_websocket_recusa_quem_nao_vem_do_localhost():
     from starlette.websockets import WebSocketDisconnect
 
-    aplicativo = criar_aplicativo(llm=LaylaDeMentira([]))
+    aplicativo = servidor.criar_aplicativo(
+        llm=LaylaDeMentira([]), sessoes=sessao_modulo.RegistroDeSessoes()
+    )
     cliente = TestClient(aplicativo, client=("203.0.113.7", 55000))
 
     with (

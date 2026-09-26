@@ -75,3 +75,13 @@ class ConfiguracaoLayla:
             limite_contexto=_ler_int("LAYLA_LIMITE_CONTEXTO", LIMITE_CONTEXTO_PADRAO),
             temperatura=_ler_float("LAYLA_TEMPERATURA", 0.2),
         )
+
+
+def validade_da_sessao_do_ambiente(padrao: float) -> float:
+    return _ler_float("ASSISTENTE_VALIDADE_SESSAO", padrao)
+
+
+def porta_do_ambiente(padrao: int) -> int:
+    # Sem mensagem propria: um valor invalido aqui sempre levantou o ValueError
+    # cru do int(), e main.py mantem esse comportamento.
+    return int(os.getenv("ASSISTENTE_PORTA") or padrao)

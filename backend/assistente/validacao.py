@@ -13,9 +13,12 @@ from collections.abc import Sequence
 from dataclasses import dataclass
 from typing import Any
 
-from assistente.acoes import CATALOGO, POSICIONAR, REGIOES
-from assistente.nomes import app_existe, app_foi_citado, normalizar
-from assistente.tela import RetratoDaTela
+from assistente import acoes, nomes
+from assistente import tela as tela_modulo
+
+# Reexportados: outros modulos usam validacao.app_foi_citado e validacao.normalizar.
+app_foi_citado = nomes.app_foi_citado
+normalizar = nomes.normalizar
 
 __all__ = [
     "AcaoValidada",
@@ -63,7 +66,7 @@ class ResultadoDaValidacao:
 def validar_acoes(
     brutas: Any,
     *,
-    tela: RetratoDaTela,
+    tela: tela_modulo.RetratoDaTela,
     textos_do_usuario: Sequence[str],
 ) -> ResultadoDaValidacao:
     """Filtra a lista de acoes da Layla, guardando o motivo de cada recusa."""
@@ -92,13 +95,13 @@ def validar_acoes(
 
 
 def _motivo_da_recusa(
-    bruta: Any, *, tela: RetratoDaTela, textos_do_usuario: Sequence[str]
+    bruta: Any, *, tela: tela_modulo.RetratoDaTela, textos_do_usuario: Sequence[str]
 ) -> str | None:
     if not isinstance(bruta, dict):
         return "a acao nao e um objeto"
 
     acao = bruta.get("acao")
-    if not isinstance(acao, str) or acao not in CATALOGO:
+    if not isinstance(acao, str) or acao not in acoes.CATALOGO:
         return f"a acao {acao!r} nao esta no catalogo"
 
     app = bruta.get("app")
@@ -106,13 +109,13 @@ def _motivo_da_recusa(
         return "a acao nao diz sobre qual aplicativo"
     app = app.strip()
 
-    if not app_existe(app, tela):
+    if not nomes.app_existe(app, tela):
         return f"nao encontrei o aplicativo {app!r} nesta maquina"
 
-    if not app_foi_citado(app, textos_do_usuario):
+    if not nomes.app_foi_citado(app, textos_do_usuario):
         return f"o aplicativo {app!r} nao foi citado no pedido"
 
-    if acao == POSICIONAR:
+    if acao == acoes.POSICIONAR:
         return _motivo_da_recusa_de_posicionamento(bruta, tela=tela)
 
     if bruta.get("regiao") is not None:
@@ -122,12 +125,12 @@ def _motivo_da_recusa(
 
 
 def _motivo_da_recusa_de_posicionamento(
-    bruta: dict, *, tela: RetratoDaTela
+    bruta: dict, *, tela: tela_modulo.RetratoDaTela
 ) -> str | None:
     regiao = bruta.get("regiao")
     if regiao is None:
         return "posicionar sem dizer a regiao"
-    if not isinstance(regiao, str) or regiao not in REGIOES:
+    if not isinstance(regiao, str) or regiao not in acoes.REGIOES:
         return f"a regiao {regiao!r} nao existe"
 
     # A Layla trabalha com nomes de regiao, mas se mandar coordenadas elas

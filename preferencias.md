@@ -69,6 +69,16 @@ explicação nos dois garante que um dos dois vai envelhecer errado.
 Condição de `if` vai entre parênteses em todo o projeto: `if (condicao):`. Por
 isso não se usa `ruff format`: ele tira os parênteses.
 
+## Execução e imports
+
+Só o `main.py` é executado; o resto é importado: `import` pelo nome do outro
+arquivo (`from assistente import configuracao` → `configuracao.ConfiguracaoLayla`),
+nunca `from arquivo import nome`. Em subpacote: `from assistente.layla import
+cliente` e depois `cliente.ClienteLayla`. Bibliotecas de fora ficam como estão.
+Se um nome colidir com variável local (ex.: o parâmetro `configuracao` no
+`__init__` de `ClienteLayla`), importe o módulo com apelido: `from assistente
+import configuracao as configuracao_modulo`.
+
 ## Escopo
 
 Mexa só onde foi pedido. O que o pedido não cita, não se toca: sem reformatar
