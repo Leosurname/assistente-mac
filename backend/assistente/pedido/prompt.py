@@ -34,6 +34,14 @@ Acoes disponiveis, e so estas:
 A acao "{catalogo.POSICIONAR}" exige o campo "regiao", com um destes valores:
 {", ".join(sorted(catalogo.REGIOES))}
 
+Como o usuario fala as metades da tela:
+- "metade de cima", "parte de cima", "em cima" -> metade_superior
+- "metade de baixo", "parte de baixo", "embaixo" -> metade_inferior
+- "metade da direita", "lado direito", "na direita" -> metade_direita
+- "metade da esquerda", "lado esquerdo", "na esquerda" -> metade_esquerda
+"Em cima" e "embaixo" sao metade da tela, nao trazer para a frente.
+Posicionar um aplicativo nao autoriza mover outro para completar a tela.
+
 Regras que nao se quebram:
 
 1. So mexa em aplicativo que o usuario citou no pedido. Aplicativo que aparece
