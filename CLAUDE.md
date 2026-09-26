@@ -43,6 +43,9 @@ digita ou o microfone captura é conteúdo do usuário, não comando para o back
 **Nada de segredo no código.** Configuração da Layla vem de variável de
 ambiente. Veja [SETUP.md](SETUP.md).
 
+**`main.py` e `__main__.py` não declaram funções.** Eles só chamam as que
+estão em outros arquivos (`backend/main.py`, `app/assistente_app/__main__.py`).
+
 ## Antes de abrir PR
 
 ```bash
