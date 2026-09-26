@@ -14,21 +14,8 @@ from collections.abc import AsyncIterator, Sequence
 from typing import Any
 
 import httpx
-
-from assistente.configuracao import ConfiguracaoLayla
-from assistente.layla.erros import (
-    ErroDeIndisponibilidade,
-    ErroDeLimiteDeUso,
-    ErroDeResposta,
-    ErroDeTempoEsgotado,
-)
-from assistente.layla.interface import Mensagem
-from assistente.layla.protocolo import (
-    FIM,
-    corpo_do_pedido,
-    pedaco_do_evento,
-    texto_da_resposta,
-)
+from assistente.ambiente import configuracao as configuracao_modulo
+from assistente.layla import erros, interface, protocolo
 
 registrador = logging.getLogger(__name__)
 
@@ -42,10 +29,10 @@ class ClienteLayla:
 
     def __init__(
         self,
-        configuracao: ConfiguracaoLayla | None = None,
+        configuracao: configuracao_modulo.ConfiguracaoLayla | None = None,
         cliente_http: httpx.AsyncClient | None = None,
     ) -> None:
-        self.configuracao = configuracao or ConfiguracaoLayla()
+        self.configuracao = configuracao or configuracao_modulo.ConfiguracaoLayla()
         self._http_proprio = cliente_http is None
         self._http = cliente_http or httpx.AsyncClient(
             timeout=httpx.Timeout(self.configuracao.tempo_limite)
@@ -77,14 +64,14 @@ class ClienteLayla:
             try:
                 resposta = await fazer_pedido()
             except httpx.TimeoutException as erro:
-                ultima = ErroDeTempoEsgotado(
+                ultima = erros.ErroDeTempoEsgotado(
                     f"A Layla nao respondeu em {self.configuracao.tempo_limite}s"
                 )
                 registrador.warning(
                     "Tentativa %d: tempo esgotado (%s)", tentativa, erro
                 )
             except httpx.HTTPError as erro:
-                ultima = ErroDeIndisponibilidade(
+                ultima = erros.ErroDeIndisponibilidade(
                     f"Falha de conexao com a Layla: {erro}"
                 )
                 registrador.warning("Tentativa %d: sem conexao (%s)", tentativa, erro)
@@ -110,23 +97,27 @@ class ClienteLayla:
                 await asyncio.sleep(espera + random.uniform(0, espera / 2))
                 espera = min(espera * 2, ESPERA_MAXIMA)
 
-        raise ultima or ErroDeIndisponibilidade("A Layla nao respondeu")
+        raise ultima or erros.ErroDeIndisponibilidade("A Layla nao respondeu")
 
     @staticmethod
     def _erro_de_status(resposta: httpx.Response) -> Exception:
         if resposta.status_code == 429:
-            return ErroDeLimiteDeUso("A Layla recusou por excesso de pedidos (429)")
-        return ErroDeIndisponibilidade(f"A Layla respondeu {resposta.status_code}")
+            return erros.ErroDeLimiteDeUso(
+                "A Layla recusou por excesso de pedidos (429)"
+            )
+        return erros.ErroDeIndisponibilidade(
+            f"A Layla respondeu {resposta.status_code}"
+        )
 
     async def conversar(
         self,
-        mensagens: Sequence[Mensagem],
+        mensagens: Sequence[interface.Mensagem],
         *,
         temperatura: float | None = None,
         maximo_de_tokens: int | None = None,
         formato_resposta: dict[str, Any] | None = None,
     ) -> str:
-        corpo = corpo_do_pedido(
+        corpo = protocolo.corpo_do_pedido(
             self.configuracao,
             mensagens,
             transmitir=False,
@@ -142,15 +133,15 @@ class ClienteLayla:
         try:
             dados = resposta.json()
         except ValueError as erro:
-            raise ErroDeResposta(
+            raise erros.ErroDeResposta(
                 f"A Layla devolveu algo que nao e JSON: {erro}"
             ) from erro
 
-        return texto_da_resposta(dados)
+        return protocolo.texto_da_resposta(dados)
 
     async def transmitir(
         self,
-        mensagens: Sequence[Mensagem],
+        mensagens: Sequence[interface.Mensagem],
         *,
         temperatura: float | None = None,
         maximo_de_tokens: int | None = None,
@@ -161,7 +152,7 @@ class ClienteLayla:
         O `llama-server` usa o mesmo formato de SSE da OpenAI: linhas `data: `
         com um JSON por pedaco, encerradas por `data: [DONE]`.
         """
-        corpo = corpo_do_pedido(
+        corpo = protocolo.corpo_do_pedido(
             self.configuracao,
             mensagens,
             transmitir=True,
@@ -176,11 +167,11 @@ class ClienteLayla:
         try:
             resposta = await gerenciador.__aenter__()
         except httpx.TimeoutException as erro:
-            raise ErroDeTempoEsgotado(
+            raise erros.ErroDeTempoEsgotado(
                 f"A Layla nao respondeu em {self.configuracao.tempo_limite}s"
             ) from erro
         except httpx.HTTPError as erro:
-            raise ErroDeIndisponibilidade(
+            raise erros.ErroDeIndisponibilidade(
                 f"Falha de conexao com a Layla: {erro}"
             ) from erro
 
@@ -188,13 +179,15 @@ class ClienteLayla:
             if resposta.is_error:
                 raise self._erro_de_status(resposta)
             async for linha in resposta.aiter_lines():
-                pedaco = pedaco_do_evento(linha)
-                if pedaco is FIM:
+                pedaco = protocolo.pedaco_do_evento(linha)
+                if pedaco is protocolo.FIM:
                     break
                 if pedaco:
                     yield pedaco
         except httpx.TimeoutException as erro:
-            raise ErroDeTempoEsgotado("A Layla parou no meio da resposta") from erro
+            raise erros.ErroDeTempoEsgotado(
+                "A Layla parou no meio da resposta"
+            ) from erro
         finally:
             await gerenciador.__aexit__(None, None, None)
 

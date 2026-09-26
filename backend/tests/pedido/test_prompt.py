@@ -2,24 +2,26 @@
 
 from __future__ import annotations
 
-from assistente import prompt
-from assistente.acoes import CATALOGO, REGIOES
-from assistente.layla.interface import Mensagem
-from assistente.tela import Janela, Monitor, RetratoDaTela
+from assistente.acoes import catalogo
+from assistente.layla import interface
+from assistente.pedido import prompt
+from assistente.tela import retrato
 
-TELA = RetratoDaTela(
-    monitores=(Monitor(3456, 2234),),
+TELA = retrato.RetratoDaTela(
+    monitores=(retrato.Monitor(3456, 2234),),
     apps_abertos=("Finder", "Safari"),
-    janelas=(Janela(app="Safari", x=100, y=80, largura=1200, altura=900),),
+    janelas=(
+        retrato.Janela(app="Safari", x=100, y=80, largura=1200, altura=900),
+    ),
 )
 
 
 def test_o_catalogo_inteiro_aparece_nas_instrucoes():
     texto = prompt.instrucoes()
 
-    for acao in CATALOGO:
+    for acao in catalogo.CATALOGO:
         assert acao in texto
-    for regiao in REGIOES:
+    for regiao in catalogo.REGIOES:
         assert regiao in texto
 
 
@@ -62,7 +64,10 @@ def test_a_transcricao_e_truncada():
 
 
 def test_o_historico_entra_entre_o_sistema_e_o_pedido():
-    historico = [Mensagem("usuario", "quero terminal"), Mensagem("assistente", "{}")]
+    historico = [
+        interface.Mensagem("usuario", "quero terminal"),
+        interface.Mensagem("assistente", "{}"),
+    ]
 
     mensagens = prompt.montar("agora joga pra direita", TELA, historico)
 

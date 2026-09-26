@@ -7,10 +7,9 @@ from collections.abc import AsyncIterator, Sequence
 from typing import Any
 
 import pytest
-from assistente.layla.erros import ErroDeIndisponibilidade, ErroDeTempoEsgotado
-from assistente.layla.interface import ClienteDeLLM, Mensagem
-from assistente.servidor import criar_aplicativo, e_local
-from assistente.sessao import RegistroDeSessoes
+from assistente.layla import erros, interface
+from assistente.pedido import sessao
+from assistente.rede import servidor
 from fastapi.testclient import TestClient
 
 TELA = {
@@ -27,7 +26,7 @@ class LaylaDeMentira:
     def __init__(self, respostas: Sequence[Any], disponivel: bool = True):
         self._respostas = list(respostas)
         self.disponivel = disponivel
-        self.chamadas: list[list[Mensagem]] = []
+        self.chamadas: list[list[interface.Mensagem]] = []
 
     async def conversar(self, mensagens, **_: Any) -> str:
         self.chamadas.append(list(mensagens))
@@ -53,13 +52,15 @@ def _cliente(llm: LaylaDeMentira, **kwargs) -> TestClient:
     # O TestClient se apresenta como "testclient" por padrao, e o servidor so
     # aceita conexao local: o teste precisa dizer de onde esta chamando.
     return TestClient(
-        criar_aplicativo(llm=llm, sessoes=RegistroDeSessoes(**kwargs)),
+        servidor.criar_aplicativo(
+            llm=llm, sessoes=sessao.RegistroDeSessoes(**kwargs)
+        ),
         client=("127.0.0.1", 50000),
     )
 
 
 def test_o_cliente_de_mentira_cumpre_a_interface():
-    assert isinstance(LaylaDeMentira([]), ClienteDeLLM)
+    assert isinstance(LaylaDeMentira([]), interface.ClienteDeLLM)
 
 
 # ── health check ─────────────────────────────────────────────────────────────
@@ -246,8 +247,8 @@ def test_pedido_malformado_nao_chega_a_incomodar_a_layla():
 @pytest.mark.parametrize(
     ("erro", "trecho"),
     [
-        (ErroDeTempoEsgotado("demorou"), "demorou demais"),
-        (ErroDeIndisponibilidade("fora"), "não está respondendo"),
+        (erros.ErroDeTempoEsgotado("demorou"), "demorou demais"),
+        (erros.ErroDeIndisponibilidade("fora"), "não está respondendo"),
     ],
 )
 def test_falha_da_layla_vira_erro_com_mensagem_clara(erro: Exception, trecho: str):
@@ -276,18 +277,20 @@ def test_resposta_da_layla_que_nao_e_json_vira_erro():
 
 @pytest.mark.parametrize("endereco", ["127.0.0.1", "::1", "localhost"])
 def test_enderecos_locais_sao_aceitos(endereco: str):
-    assert e_local(endereco)
+    assert servidor.e_local(endereco)
 
 
 @pytest.mark.parametrize("endereco", ["192.168.0.10", "10.0.0.1", "8.8.8.8", None])
 def test_enderecos_de_fora_sao_recusados(endereco):
-    assert not e_local(endereco)
+    assert not servidor.e_local(endereco)
 
 
 def test_o_websocket_recusa_quem_nao_vem_do_localhost():
     from starlette.websockets import WebSocketDisconnect
 
-    aplicativo = criar_aplicativo(llm=LaylaDeMentira([]))
+    aplicativo = servidor.criar_aplicativo(
+        llm=LaylaDeMentira([]), sessoes=sessao.RegistroDeSessoes()
+    )
     cliente = TestClient(aplicativo, client=("203.0.113.7", 55000))
 
     with (
@@ -297,3 +300,75 @@ def test_o_websocket_recusa_quem_nao_vem_do_localhost():
         pass
 
     assert capturado.value.code == 1008
+
+
+# ── ponto de entrada ─────────────────────────────────────────────────────────
+
+
+def test_montar_do_ambiente_com_validade_invalida_da_erro_claro(
+    monkeypatch: pytest.MonkeyPatch,
+):
+    monkeypatch.setenv("ASSISTENTE_VALIDADE_SESSAO", "eterna")
+
+    with pytest.raises(ValueError, match="ASSISTENTE_VALIDADE_SESSAO"):
+        servidor.montar_do_ambiente()
+
+
+def test_montar_do_ambiente_monta_app_com_rota_de_health(
+    monkeypatch: pytest.MonkeyPatch,
+):
+    monkeypatch.delenv("ASSISTENTE_VALIDADE_SESSAO", raising=False)
+
+    aplicativo = servidor.montar_do_ambiente()
+
+    caminhos = {rota.path for rota in aplicativo.routes}
+    assert "/health" in caminhos
+
+
+def test_montar_do_ambiente_leva_a_validade_do_ambiente_ao_registro_de_sessoes(
+    monkeypatch: pytest.MonkeyPatch,
+):
+    monkeypatch.setenv("ASSISTENTE_VALIDADE_SESSAO", "45")
+    assert servidor.montar_do_ambiente().state.sessoes.validade == 45
+
+    monkeypatch.delenv("ASSISTENTE_VALIDADE_SESSAO", raising=False)
+    assert servidor.montar_do_ambiente().state.sessoes.validade == 120.0
+
+
+def test_subir_usa_host_e_porta_padrao(monkeypatch: pytest.MonkeyPatch):
+    monkeypatch.delenv("ASSISTENTE_PORTA", raising=False)
+    chamadas: list[dict[str, Any]] = []
+
+    def uvicorn_run_de_mentira(aplicativo, **kwargs: Any) -> None:
+        chamadas.append({"aplicativo": aplicativo, **kwargs})
+
+    monkeypatch.setattr(servidor.uvicorn, "run", uvicorn_run_de_mentira)
+
+    aplicativo = servidor.criar_aplicativo(
+        llm=LaylaDeMentira([]), sessoes=sessao.RegistroDeSessoes()
+    )
+    servidor.subir(aplicativo)
+
+    assert len(chamadas) == 1
+    assert chamadas[0]["aplicativo"] is aplicativo
+    assert chamadas[0]["host"] == "127.0.0.1"
+    assert chamadas[0]["port"] == 8765
+    assert chamadas[0]["log_config"] is None
+
+
+def test_subir_usa_a_porta_do_ambiente(monkeypatch: pytest.MonkeyPatch):
+    monkeypatch.setenv("ASSISTENTE_PORTA", "9001")
+    portas: list[int] = []
+
+    monkeypatch.setattr(
+        servidor.uvicorn,
+        "run",
+        lambda aplicativo, **kwargs: portas.append(kwargs["port"]),
+    )
+
+    aplicativo = servidor.criar_aplicativo(
+        llm=LaylaDeMentira([]), sessoes=sessao.RegistroDeSessoes()
+    )
+    servidor.subir(aplicativo)
+
+    assert portas == [9001]

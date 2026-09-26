@@ -5,7 +5,7 @@ from __future__ import annotations
 import unicodedata
 from collections.abc import Iterable
 
-from assistente.tela import RetratoDaTela
+from assistente.tela import retrato
 
 # Nomes alternativos pelos quais um aplicativo costuma ser chamado em voz alta.
 # Sem isso, "abre o terminal" nao casaria com o aplicativo "Terminal.app", e
@@ -54,7 +54,7 @@ def app_foi_citado(app: str, textos_do_usuario: Iterable[str]) -> bool:
     return any(forma in pedido for forma in formas_do_app(app))
 
 
-def app_existe(app: str, tela: RetratoDaTela) -> bool:
+def app_existe(app: str, tela: retrato.RetratoDaTela) -> bool:
     """Diz se o aplicativo existe nesta maquina.
 
     Quem responde isso e `apps_instalados`, e nao a lista de apps abertos:

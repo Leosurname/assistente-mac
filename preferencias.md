@@ -69,6 +69,13 @@ explicação nos dois garante que um dos dois vai envelhecer errado.
 Condição de `if` vai entre parênteses em todo o projeto: `if (condicao):`. Por
 isso não se usa `ruff format`: ele tira os parênteses.
 
+## Execução e imports
+
+No backend, todos os outros arquivos fazem as funções; o `main.py` só chama.
+Só o `main.py` é executado, e o resto é import pelo nome do outro arquivo:
+`from assistente.ambiente import configuracao` → `configuracao.ConfiguracaoLayla`.
+Separa tudo em várias pastas e não repita o nome de arquivos.
+
 ## Escopo
 
 Mexa só onde foi pedido. O que o pedido não cita, não se toca: sem reformatar
