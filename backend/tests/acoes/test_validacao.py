@@ -3,20 +3,20 @@
 from __future__ import annotations
 
 import pytest
-from assistente.tela import Janela, Monitor, RetratoDaTela
-from assistente.validacao import app_foi_citado, normalizar, validar_acoes
+from assistente.acoes import validacao
+from assistente.tela import retrato
 
-TELA = RetratoDaTela(
-    monitores=(Monitor(largura=3456, altura=2234),),
+TELA = retrato.RetratoDaTela(
+    monitores=(retrato.Monitor(largura=3456, altura=2234),),
     apps_abertos=("Finder", "Safari", "Terminal", "Claude Code", "Spotify"),
-    janelas=(Janela(app="Safari", x=100, y=80, largura=1200, altura=900),),
+    janelas=(retrato.Janela(app="Safari", x=100, y=80, largura=1200, altura=900),),
 )
 
 PEDIDO = ["quero terminal e safari, e ja deixa o claude code aberto"]
 
 
 def _validar(acoes, textos=PEDIDO, tela=TELA):
-    return validar_acoes(acoes, tela=tela, textos_do_usuario=textos)
+    return validacao.validar_acoes(acoes, tela=tela, textos_do_usuario=textos)
 
 
 # ── catalogo fechado ─────────────────────────────────────────────────────────
@@ -114,23 +114,23 @@ def test_sem_nenhuma_fala_do_usuario_nada_passa():
     ],
 )
 def test_reconhece_o_app_pelo_nome_e_pelos_apelidos(app: str, pedido: str):
-    assert app_foi_citado(app, [pedido])
+    assert validacao.app_foi_citado(app, [pedido])
 
 
 def test_nao_confunde_app_que_nao_foi_falado():
-    assert not app_foi_citado("Spotify", ["quero terminal e safari"])
+    assert not validacao.app_foi_citado("Spotify", ["quero terminal e safari"])
 
 
 def test_normalizar_tira_acento_e_caixa():
-    assert normalizar("  Música  DO  Usuário ") == "musica do usuario"
+    assert validacao.normalizar("  Música  DO  Usuário ") == "musica do usuario"
 
 
 # ── aplicativos que existem ──────────────────────────────────────────────────
 
 
 def test_app_desconhecido_pela_maquina_e_recusado():
-    tela = RetratoDaTela(
-        monitores=(Monitor(1920, 1080),),
+    pequena = retrato.RetratoDaTela(
+        monitores=(retrato.Monitor(1920, 1080),),
         apps_abertos=("Finder",),
         apps_instalados=("Safari", "Terminal"),
     )
@@ -138,7 +138,7 @@ def test_app_desconhecido_pela_maquina_e_recusado():
     resultado = _validar(
         [{"acao": "abrir_app", "app": "Photoshop"}],
         textos=["abre o photoshop"],
-        tela=tela,
+        tela=pequena,
     )
 
     assert resultado.aprovadas == ()
@@ -147,8 +147,8 @@ def test_app_desconhecido_pela_maquina_e_recusado():
 
 def test_abrir_app_que_ainda_nao_esta_aberto_passa():
     """E o caso normal de `abrir_app`: o Terminal esta instalado, nao aberto."""
-    tela = RetratoDaTela(
-        monitores=(Monitor(1920, 1080),),
+    pequena = retrato.RetratoDaTela(
+        monitores=(retrato.Monitor(1920, 1080),),
         apps_abertos=("Finder",),
         apps_instalados=("Finder", "Safari", "Terminal"),
     )
@@ -156,7 +156,7 @@ def test_abrir_app_que_ainda_nao_esta_aberto_passa():
     resultado = _validar(
         [{"acao": "abrir_app", "app": "Terminal"}],
         textos=["abre o terminal"],
-        tela=tela,
+        tela=pequena,
     )
 
     assert len(resultado.aprovadas) == 1
@@ -167,7 +167,7 @@ def test_sem_retrato_a_checagem_de_existencia_fica_com_a_camada_nativa():
     resultado = _validar(
         [{"acao": "abrir_app", "app": "Photoshop"}],
         textos=["abre o photoshop"],
-        tela=RetratoDaTela(),
+        tela=retrato.RetratoDaTela(),
     )
 
     assert len(resultado.aprovadas) == 1

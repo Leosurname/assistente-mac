@@ -104,7 +104,7 @@ pip install -r requirements.txt
 Para rodar:
 
 ```bash
-python -m assistente.servidor
+python main.py
 ```
 
 O backend sobe em `127.0.0.1` e recusa qualquer conexão que não venha da

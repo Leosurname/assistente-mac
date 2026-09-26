@@ -11,7 +11,7 @@ import uuid
 from collections import deque
 from dataclasses import dataclass, field
 
-from assistente.layla.interface import Mensagem
+from assistente.layla import interface
 
 VALIDADE_PADRAO = 120.0
 MAXIMO_DE_TURNOS = 6
@@ -22,7 +22,7 @@ class Sessao:
     identificador: str
     validade: float = VALIDADE_PADRAO
     atualizada_em: float = field(default_factory=time.monotonic)
-    historico: deque[Mensagem] = field(
+    historico: deque[interface.Mensagem] = field(
         default_factory=lambda: deque(maxlen=MAXIMO_DE_TURNOS * 2)
     )
     pedidos: deque[str] = field(default_factory=lambda: deque(maxlen=MAXIMO_DE_TURNOS))
@@ -34,8 +34,8 @@ class Sessao:
     def registrar(self, pedido: str, resposta: str) -> None:
         """Guarda um turno completo e reinicia a contagem de validade."""
         self.pedidos.append(pedido)
-        self.historico.append(Mensagem("usuario", pedido))
-        self.historico.append(Mensagem("assistente", resposta))
+        self.historico.append(interface.Mensagem("usuario", pedido))
+        self.historico.append(interface.Mensagem("assistente", resposta))
         self.atualizada_em = time.monotonic()
 
     def tocar(self) -> None:

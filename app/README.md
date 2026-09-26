@@ -25,6 +25,10 @@ O que dá para testar sem macOS fica separado do que não dá:
 | `protocolo.py` | não | Monta o pedido, lê a resposta do backend |
 | `configuracao.py` | não | Variáveis de ambiente |
 | `coordenador.py` | não | O fluxo inteiro, com tudo injetado |
+| `ponte.py` | não | Liga cliente e microfone ao coordenador, criado depois deles |
+| `fala.py` | sim | Fala a resposta com `NSSpeechSynthesizer` |
+| `fila.py` | sim | Leva um bloco para a thread principal |
+| `montagem.py` | sim | Monta tudo e roda o AppKit; o `__main__.py` só chama |
 | `atalho.py` | sim | Event tap do Quartz: Option+9 e digitação |
 | `sobreposicao.py` | sim | O `NSPanel` que não rouba foco |
 | `voz.py` | sim | `SFSpeechRecognizer` + `AVAudioEngine` |
@@ -33,7 +37,7 @@ O que dá para testar sem macOS fica separado do que não dá:
 | `contexto.py` | sim | O retrato da tela |
 | `cliente.py` | sim (thread) | WebSocket com o backend |
 
-Os cinco primeiros cobrem o comportamento do produto e têm teste. O
+Os seis primeiros cobrem o comportamento do produto e têm teste. O
 `coordenador.py` recebe caixa, microfone, executor, relógio e envio por
 parâmetro — é o que permite testar do atalho até a caixa sumindo sem abrir
 janela, sem microfone e sem backend no ar.

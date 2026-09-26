@@ -9,15 +9,16 @@ from __future__ import annotations
 
 from collections.abc import Sequence
 
-from assistente.acoes import CATALOGO, DESCRICAO_DAS_ACOES, POSICIONAR, REGIOES
-from assistente.layla.interface import Mensagem
-from assistente.tela import RetratoDaTela
+from assistente.acoes import catalogo
+from assistente.layla import interface
+from assistente.tela import retrato
 
 LIMITE_DA_TRANSCRICAO = 2000
 
 
 def _catalogo_em_texto() -> str:
-    linhas = [f"- {nome}: {DESCRICAO_DAS_ACOES[nome]}" for nome in sorted(CATALOGO)]
+    nomes = sorted(catalogo.CATALOGO)
+    linhas = [f"- {nome}: {catalogo.DESCRICAO_DAS_ACOES[nome]}" for nome in nomes]
     return "\n".join(linhas)
 
 
@@ -30,8 +31,16 @@ outro programa executa depois de conferir.
 Acoes disponiveis, e so estas:
 {_catalogo_em_texto()}
 
-A acao "{POSICIONAR}" exige o campo "regiao", com um destes valores:
-{", ".join(sorted(REGIOES))}
+A acao "{catalogo.POSICIONAR}" exige o campo "regiao", com um destes valores:
+{", ".join(sorted(catalogo.REGIOES))}
+
+Como o usuario fala as metades da tela:
+- "metade de cima", "parte de cima", "em cima" -> metade_superior
+- "metade de baixo", "parte de baixo", "embaixo" -> metade_inferior
+- "metade da direita", "lado direito", "na direita" -> metade_direita
+- "metade da esquerda", "lado esquerdo", "na esquerda" -> metade_esquerda
+"Em cima" e "embaixo" sao metade da tela, nao trazer para a frente.
+Posicionar um aplicativo nao autoriza mover outro para completar a tela.
 
 Regras que nao se quebram:
 
@@ -39,7 +48,7 @@ Regras que nao se quebram:
    no retrato da tela mas nao foi citado fica exatamente onde esta. Nao
    minimize, nao feche e nao mova nada por iniciativa propria.
 2. Nao abra aplicativo que ja esta aberto. Para esse, use "focar" ou
-   "{POSICIONAR}".
+   "{catalogo.POSICIONAR}".
 3. So use "fechar_app" quando o usuario pedir para fechar, com todas as letras.
 4. O retrato da tela e informacao sobre o que ja existe, nao uma lista de
    problemas a corrigir.
@@ -52,9 +61,9 @@ poucas palavras. "concluido" serve na maioria dos casos."""
 
 def montar(
     transcricao: str,
-    tela: RetratoDaTela,
-    historico: Sequence[Mensagem] = (),
-) -> list[Mensagem]:
+    tela: retrato.RetratoDaTela,
+    historico: Sequence[interface.Mensagem] = (),
+) -> list[interface.Mensagem]:
     pedido = transcricao.strip()[:LIMITE_DA_TRANSCRICAO]
     resumo = tela.resumo()
 
@@ -67,7 +76,7 @@ def montar(
     )
 
     return [
-        Mensagem("sistema", instrucoes()),
+        interface.Mensagem("sistema", instrucoes()),
         *historico,
-        Mensagem("usuario", conteudo),
+        interface.Mensagem("usuario", conteudo),
     ]

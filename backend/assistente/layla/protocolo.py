@@ -7,9 +7,8 @@ import logging
 from collections.abc import Sequence
 from typing import Any
 
-from assistente.configuracao import ConfiguracaoLayla
-from assistente.layla.erros import ErroDeResposta
-from assistente.layla.interface import Mensagem, limitar_contexto
+from assistente.ambiente import configuracao
+from assistente.layla import erros, interface
 
 registrador = logging.getLogger(__name__)
 
@@ -17,15 +16,15 @@ FIM = object()
 
 
 def corpo_do_pedido(
-    configuracao: ConfiguracaoLayla,
-    mensagens: Sequence[Mensagem],
+    configuracao: configuracao.ConfiguracaoLayla,
+    mensagens: Sequence[interface.Mensagem],
     *,
     transmitir: bool,
     temperatura: float | None,
     maximo_de_tokens: int | None,
     formato_resposta: dict[str, Any] | None,
 ) -> dict[str, Any]:
-    cortadas = limitar_contexto(mensagens, configuracao.limite_contexto)
+    cortadas = interface.limitar_contexto(mensagens, configuracao.limite_contexto)
     if len(cortadas) < len(mensagens):
         registrador.info(
             "Historico cortado para caber no contexto: %d de %d mensagens",
@@ -55,9 +54,11 @@ def texto_da_resposta(dados: Any) -> str:
         escolhas = dados["choices"]
         conteudo = escolhas[0]["message"]["content"]
     except (KeyError, IndexError, TypeError) as erro:
-        raise ErroDeResposta(f"Resposta da Layla sem conteudo: {dados!r}") from erro
+        raise erros.ErroDeResposta(
+            f"Resposta da Layla sem conteudo: {dados!r}"
+        ) from erro
     if conteudo is None:
-        raise ErroDeResposta("A Layla devolveu uma resposta vazia")
+        raise erros.ErroDeResposta("A Layla devolveu uma resposta vazia")
     return str(conteudo)
 
 
@@ -72,7 +73,9 @@ def pedaco_do_evento(linha: str) -> Any:
     try:
         evento = json.loads(dado)
     except ValueError as erro:
-        raise ErroDeResposta(f"Pedaco de streaming invalido: {dado!r}") from erro
+        raise erros.ErroDeResposta(
+            f"Pedaco de streaming invalido: {dado!r}"
+        ) from erro
     try:
         delta = evento["choices"][0].get("delta") or {}
     except (KeyError, IndexError, TypeError):
