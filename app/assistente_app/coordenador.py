@@ -25,6 +25,10 @@ registrador = logging.getLogger(__name__)
 
 MENSAGEM_DE_FALHA = "não consegui falar com a Layla"
 
+# O reconhecimento do macOS so marca a frase como final quando o audio acaba, e
+# o microfone segue ligado: quem encerra o pedido e o silencio depois da fala.
+SILENCIO = 1.2
+
 
 class Caixa(Protocol):
     def mostrar(self) -> None: ...
@@ -65,9 +69,11 @@ class Coordenador:
         self.falar = falar
         self.dispensa = Dispensa(espera=espera)
         self.sessao: str | None = None
+        self._fala: tuple[str, float] | None = None
 
     def ao_atalho(self) -> None:
         """Option+9."""
+        self._fala = None
         efeito = self.dispensa.atalho(self.relogio())
         if efeito is Efeito.MOSTRAR:
             self.caixa.mostrar()
@@ -77,12 +83,14 @@ class Coordenador:
 
     def ao_transcrever(self, texto: str, final: bool) -> None:
         """Chegou texto do microfone, parcial ou definitivo."""
-        if not self.dispensa.visivel:
+        if (self.estado in (Estado.OCULTA, Estado.PENSANDO)):
             return
         self.dispensa.transcricao_parcial()
         self.caixa.escrever(texto)
-        if final and texto.strip():
+        if (final and texto.strip()):
             self._enviar_pedido(texto.strip())
+        elif (texto.strip()):
+            self._fala = (texto.strip(), self.relogio())
 
     def ao_digitar(self) -> None:
         self._aplicar(self.dispensa.digitou())
@@ -92,7 +100,12 @@ class Coordenador:
 
     def ao_tique(self) -> None:
         """Chamado pelo temporizador da interface, algumas vezes por segundo."""
-        self._aplicar(self.dispensa.tique(self.relogio()))
+        agora = self.relogio()
+        if (self.estado is Estado.ESCUTANDO and self._fala is not None):
+            texto, quando = self._fala
+            if (agora - quando >= SILENCIO):
+                self._enviar_pedido(texto)
+        self._aplicar(self.dispensa.tique(agora))
 
     def ao_responder(self, bruto: Any) -> None:
         if not self.dispensa.visivel:
@@ -117,6 +130,10 @@ class Coordenador:
             self._concluir(MENSAGEM_DE_FALHA)
 
     def _enviar_pedido(self, texto: str) -> None:
+        self._fala = None
+        # O microfone desliga: ligado, ele ouve o "concluído" falado pela caixa
+        # e manda de novo como pedido. Pedido emendado e outro Option+9.
+        self.microfone.parar()
         self.dispensa.pedido_enviado()
         self.caixa.marcar_pensando(True)
         self.enviar(montar_pedido(texto, self.retrato(), self.sessao))
