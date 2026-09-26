@@ -83,5 +83,5 @@ def validade_da_sessao_do_ambiente(padrao: float) -> float:
 
 def porta_do_ambiente(padrao: int) -> int:
     # Sem mensagem propria: um valor invalido aqui sempre levantou o ValueError
-    # cru do int(), e main.py mantem esse comportamento.
+    # cru do int().
     return int(os.getenv("ASSISTENTE_PORTA") or padrao)

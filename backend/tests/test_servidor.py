@@ -324,6 +324,16 @@ def test_montar_do_ambiente_monta_app_com_rota_de_health(
     assert "/health" in caminhos
 
 
+def test_montar_do_ambiente_leva_a_validade_do_ambiente_ao_registro_de_sessoes(
+    monkeypatch: pytest.MonkeyPatch,
+):
+    monkeypatch.setenv("ASSISTENTE_VALIDADE_SESSAO", "45")
+    assert servidor.montar_do_ambiente().state.sessoes.validade == 45
+
+    monkeypatch.delenv("ASSISTENTE_VALIDADE_SESSAO", raising=False)
+    assert servidor.montar_do_ambiente().state.sessoes.validade == 120.0
+
+
 def test_subir_usa_host_e_porta_padrao(monkeypatch: pytest.MonkeyPatch):
     monkeypatch.delenv("ASSISTENTE_PORTA", raising=False)
     chamadas: list[dict[str, Any]] = []
