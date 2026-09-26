@@ -9,8 +9,7 @@ from __future__ import annotations
 
 from collections.abc import Sequence
 
-from assistente import acoes
-from assistente import tela as tela_modulo
+from assistente import acoes, tela
 from assistente.layla import interface
 
 LIMITE_DA_TRANSCRICAO = 2000
@@ -53,7 +52,7 @@ poucas palavras. "concluido" serve na maioria dos casos."""
 
 def montar(
     transcricao: str,
-    tela: tela_modulo.RetratoDaTela,
+    tela: tela.RetratoDaTela,
     historico: Sequence[interface.Mensagem] = (),
 ) -> list[interface.Mensagem]:
     pedido = transcricao.strip()[:LIMITE_DA_TRANSCRICAO]

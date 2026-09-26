@@ -7,8 +7,7 @@ from collections.abc import AsyncIterator, Sequence
 from typing import Any
 
 import pytest
-from assistente import servidor
-from assistente import sessao as sessao_modulo
+from assistente import servidor, sessao
 from assistente.layla import erros, interface
 from fastapi.testclient import TestClient
 
@@ -53,7 +52,7 @@ def _cliente(llm: LaylaDeMentira, **kwargs) -> TestClient:
     # aceita conexao local: o teste precisa dizer de onde esta chamando.
     return TestClient(
         servidor.criar_aplicativo(
-            llm=llm, sessoes=sessao_modulo.RegistroDeSessoes(**kwargs)
+            llm=llm, sessoes=sessao.RegistroDeSessoes(**kwargs)
         ),
         client=("127.0.0.1", 50000),
     )
@@ -289,7 +288,7 @@ def test_o_websocket_recusa_quem_nao_vem_do_localhost():
     from starlette.websockets import WebSocketDisconnect
 
     aplicativo = servidor.criar_aplicativo(
-        llm=LaylaDeMentira([]), sessoes=sessao_modulo.RegistroDeSessoes()
+        llm=LaylaDeMentira([]), sessoes=sessao.RegistroDeSessoes()
     )
     cliente = TestClient(aplicativo, client=("203.0.113.7", 55000))
 
@@ -300,3 +299,65 @@ def test_o_websocket_recusa_quem_nao_vem_do_localhost():
         pass
 
     assert capturado.value.code == 1008
+
+
+# ── ponto de entrada ─────────────────────────────────────────────────────────
+
+
+def test_montar_do_ambiente_com_validade_invalida_da_erro_claro(
+    monkeypatch: pytest.MonkeyPatch,
+):
+    monkeypatch.setenv("ASSISTENTE_VALIDADE_SESSAO", "eterna")
+
+    with pytest.raises(ValueError, match="ASSISTENTE_VALIDADE_SESSAO"):
+        servidor.montar_do_ambiente()
+
+
+def test_montar_do_ambiente_monta_app_com_rota_de_health(
+    monkeypatch: pytest.MonkeyPatch,
+):
+    monkeypatch.delenv("ASSISTENTE_VALIDADE_SESSAO", raising=False)
+
+    aplicativo = servidor.montar_do_ambiente()
+
+    caminhos = {rota.path for rota in aplicativo.routes}
+    assert "/health" in caminhos
+
+
+def test_subir_usa_host_e_porta_padrao(monkeypatch: pytest.MonkeyPatch):
+    monkeypatch.delenv("ASSISTENTE_PORTA", raising=False)
+    chamadas: list[dict[str, Any]] = []
+
+    def uvicorn_run_de_mentira(aplicativo, **kwargs: Any) -> None:
+        chamadas.append({"aplicativo": aplicativo, **kwargs})
+
+    monkeypatch.setattr(servidor.uvicorn, "run", uvicorn_run_de_mentira)
+
+    aplicativo = servidor.criar_aplicativo(
+        llm=LaylaDeMentira([]), sessoes=sessao.RegistroDeSessoes()
+    )
+    servidor.subir(aplicativo)
+
+    assert len(chamadas) == 1
+    assert chamadas[0]["aplicativo"] is aplicativo
+    assert chamadas[0]["host"] == "127.0.0.1"
+    assert chamadas[0]["port"] == 8765
+    assert chamadas[0]["log_config"] is None
+
+
+def test_subir_usa_a_porta_do_ambiente(monkeypatch: pytest.MonkeyPatch):
+    monkeypatch.setenv("ASSISTENTE_PORTA", "9001")
+    portas: list[int] = []
+
+    monkeypatch.setattr(
+        servidor.uvicorn,
+        "run",
+        lambda aplicativo, **kwargs: portas.append(kwargs["port"]),
+    )
+
+    aplicativo = servidor.criar_aplicativo(
+        llm=LaylaDeMentira([]), sessoes=sessao.RegistroDeSessoes()
+    )
+    servidor.subir(aplicativo)
+
+    assert portas == [9001]

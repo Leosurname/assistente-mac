@@ -2,15 +2,14 @@
 
 from __future__ import annotations
 
-from assistente import acoes, prompt
-from assistente import tela as tela_modulo
+from assistente import acoes, prompt, tela
 from assistente.layla import interface
 
-TELA = tela_modulo.RetratoDaTela(
-    monitores=(tela_modulo.Monitor(3456, 2234),),
+TELA = tela.RetratoDaTela(
+    monitores=(tela.Monitor(3456, 2234),),
     apps_abertos=("Finder", "Safari"),
     janelas=(
-        tela_modulo.Janela(app="Safari", x=100, y=80, largura=1200, altura=900),
+        tela.Janela(app="Safari", x=100, y=80, largura=1200, altura=900),
     ),
 )
 

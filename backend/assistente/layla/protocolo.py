@@ -7,7 +7,7 @@ import logging
 from collections.abc import Sequence
 from typing import Any
 
-from assistente import configuracao as configuracao_modulo
+from assistente import configuracao
 from assistente.layla import erros, interface
 
 registrador = logging.getLogger(__name__)
@@ -16,7 +16,7 @@ FIM = object()
 
 
 def corpo_do_pedido(
-    configuracao: configuracao_modulo.ConfiguracaoLayla,
+    configuracao: configuracao.ConfiguracaoLayla,
     mensagens: Sequence[interface.Mensagem],
     *,
     transmitir: bool,

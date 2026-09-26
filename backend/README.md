@@ -30,7 +30,7 @@ estruturada. Pedir JSON no prompt e torcer erra formato com frequência, e o
 backend depende de uma lista de ações bem formada para validar.
 
 Por isso o cliente aceita um `response_format` com `json_schema`
-(`assistente.layla.formato_json`). O `llama-server` deriva uma gramática do
+(`assistente.layla.interface.formato_json`). O `llama-server` deriva uma gramática do
 esquema e restringe a decodificação: a resposta é sempre um JSON válido.
 
 Isso garante formato, não sentido. A validação do backend continua obrigatória.

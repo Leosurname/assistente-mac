@@ -6,18 +6,13 @@ import json
 import logging
 from dataclasses import dataclass
 
-from assistente import acoes, prompt, validacao
-from assistente import sessao as sessao_modulo
-from assistente import tela as tela_modulo
+from assistente import acoes, prompt, sessao, tela, validacao
 from assistente.layla import erros, interface
 
 registrador = logging.getLogger(__name__)
 
 FALA_PADRAO = "concluído"
 FALA_SEM_ACAO = "não entendi o pedido"
-
-# Reexportado: servidor.py trata ErroDaLLM como erro conhecido de traducao.
-ErroDaLLM = erros.ErroDaLLM
 
 
 @dataclass(frozen=True)
@@ -36,8 +31,8 @@ class Traducao:
 
 async def traduzir(
     transcricao: str,
-    tela: tela_modulo.RetratoDaTela,
-    sessao: sessao_modulo.Sessao,
+    tela: tela.RetratoDaTela,
+    sessao: sessao.Sessao,
     llm: interface.ClienteDeLLM,
 ) -> Traducao:
     """Manda o pedido para a Layla e devolve so o que passou pela validacao."""
@@ -82,4 +77,4 @@ async def traduzir(
     )
 
 
-__all__ = ["ErroDaLLM", "Traducao", "traduzir"]
+__all__ = ["Traducao", "traduzir"]

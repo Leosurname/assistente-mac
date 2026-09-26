@@ -10,14 +10,13 @@ from __future__ import annotations
 import logging
 from typing import Any
 
+import uvicorn
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect
 from starlette.websockets import WebSocketState
 
 import assistente
-from assistente import sessao as sessao_modulo
-from assistente import tela as tela_modulo
-from assistente import tradutor
-from assistente.layla import erros, interface
+from assistente import configuracao, sessao, tela, tradutor
+from assistente.layla import cliente, erros, interface
 
 registrador = logging.getLogger(__name__)
 
@@ -32,10 +31,22 @@ def e_local(endereco: str | None) -> bool:
     return endereco in ENDERECOS_LOCAIS
 
 
+def montar_do_ambiente() -> FastAPI:
+    llm = cliente.ClienteLayla(configuracao.ConfiguracaoLayla.do_ambiente())
+    validade = configuracao.validade_da_sessao_do_ambiente(sessao.VALIDADE_PADRAO)
+    sessoes = sessao.RegistroDeSessoes(validade)
+    return criar_aplicativo(llm, sessoes)
+
+
+def subir(aplicativo: FastAPI) -> None:
+    porta = configuracao.porta_do_ambiente(PORTA_PADRAO)
+    registrador.info("Assistente Mac ouvindo em %s:%d", ENDERECO_PADRAO, porta)
+    uvicorn.run(aplicativo, host=ENDERECO_PADRAO, port=porta, log_config=None)
+
+
 def criar_aplicativo(
-    llm: interface.ClienteDeLLM, sessoes: sessao_modulo.RegistroDeSessoes
+    llm: interface.ClienteDeLLM, sessoes: sessao.RegistroDeSessoes
 ) -> FastAPI:
-    """Monta o aplicativo. Quem chama traz o cliente da Layla e as sessoes prontos."""
     aplicativo = FastAPI(title="Assistente Mac", version=assistente.__version__)
     aplicativo.state.sessoes = sessoes
     aplicativo.state.llm = llm
@@ -80,7 +91,7 @@ async def _responder(aplicativo: FastAPI, bruto: Any) -> dict[str, Any]:
         return _erro("a mensagem precisa ser um objeto")
 
     tipo = bruto.get("tipo")
-    sessoes: sessao_modulo.RegistroDeSessoes = aplicativo.state.sessoes
+    sessoes: sessao.RegistroDeSessoes = aplicativo.state.sessoes
 
     if tipo == "encerrar":
         identificador = bruto.get("sessao")
@@ -97,15 +108,15 @@ async def _responder(aplicativo: FastAPI, bruto: Any) -> dict[str, Any]:
     texto = texto.strip()[:LIMITE_DO_TEXTO]
 
     try:
-        tela = tela_modulo.RetratoDaTela.do_dicionario(bruto.get("tela"))
-    except tela_modulo.RetratoInvalido as erro:
+        retrato = tela.RetratoDaTela.do_dicionario(bruto.get("tela"))
+    except tela.RetratoInvalido as erro:
         return _erro(f"o retrato da tela veio fora do formato: {erro}")
 
     identificador = bruto.get("sessao")
-    sessao = sessoes.obter(identificador if isinstance(identificador, str) else None)
+    atual = sessoes.obter(identificador if isinstance(identificador, str) else None)
 
     try:
-        traducao = await tradutor.traduzir(texto, tela, sessao, aplicativo.state.llm)
+        traducao = await tradutor.traduzir(texto, retrato, atual, aplicativo.state.llm)
     except erros.ErroDaLLM as erro:
         registrador.error("Falha ao falar com a Layla: %s", erro)
         return _erro(erro.mensagem_amigavel)
@@ -117,7 +128,7 @@ async def _responder(aplicativo: FastAPI, bruto: Any) -> dict[str, Any]:
     )
 
     resposta = traducao.para_dicionario()
-    resposta["sessao"] = sessao.identificador
+    resposta["sessao"] = atual.identificador
     return resposta
 
 

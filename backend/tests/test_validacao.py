@@ -3,15 +3,12 @@
 from __future__ import annotations
 
 import pytest
-from assistente import tela as tela_modulo
-from assistente import validacao
+from assistente import tela, validacao
 
-TELA = tela_modulo.RetratoDaTela(
-    monitores=(tela_modulo.Monitor(largura=3456, altura=2234),),
+TELA = tela.RetratoDaTela(
+    monitores=(tela.Monitor(largura=3456, altura=2234),),
     apps_abertos=("Finder", "Safari", "Terminal", "Claude Code", "Spotify"),
-    janelas=(
-        tela_modulo.Janela(app="Safari", x=100, y=80, largura=1200, altura=900),
-    ),
+    janelas=(tela.Janela(app="Safari", x=100, y=80, largura=1200, altura=900),),
 )
 
 PEDIDO = ["quero terminal e safari, e ja deixa o claude code aberto"]
@@ -131,8 +128,8 @@ def test_normalizar_tira_acento_e_caixa():
 
 
 def test_app_desconhecido_pela_maquina_e_recusado():
-    tela = tela_modulo.RetratoDaTela(
-        monitores=(tela_modulo.Monitor(1920, 1080),),
+    pequena = tela.RetratoDaTela(
+        monitores=(tela.Monitor(1920, 1080),),
         apps_abertos=("Finder",),
         apps_instalados=("Safari", "Terminal"),
     )
@@ -140,7 +137,7 @@ def test_app_desconhecido_pela_maquina_e_recusado():
     resultado = _validar(
         [{"acao": "abrir_app", "app": "Photoshop"}],
         textos=["abre o photoshop"],
-        tela=tela,
+        tela=pequena,
     )
 
     assert resultado.aprovadas == ()
@@ -149,8 +146,8 @@ def test_app_desconhecido_pela_maquina_e_recusado():
 
 def test_abrir_app_que_ainda_nao_esta_aberto_passa():
     """E o caso normal de `abrir_app`: o Terminal esta instalado, nao aberto."""
-    tela = tela_modulo.RetratoDaTela(
-        monitores=(tela_modulo.Monitor(1920, 1080),),
+    pequena = tela.RetratoDaTela(
+        monitores=(tela.Monitor(1920, 1080),),
         apps_abertos=("Finder",),
         apps_instalados=("Finder", "Safari", "Terminal"),
     )
@@ -158,7 +155,7 @@ def test_abrir_app_que_ainda_nao_esta_aberto_passa():
     resultado = _validar(
         [{"acao": "abrir_app", "app": "Terminal"}],
         textos=["abre o terminal"],
-        tela=tela,
+        tela=pequena,
     )
 
     assert len(resultado.aprovadas) == 1
@@ -169,7 +166,7 @@ def test_sem_retrato_a_checagem_de_existencia_fica_com_a_camada_nativa():
     resultado = _validar(
         [{"acao": "abrir_app", "app": "Photoshop"}],
         textos=["abre o photoshop"],
-        tela=tela_modulo.RetratoDaTela(),
+        tela=tela.RetratoDaTela(),
     )
 
     assert len(resultado.aprovadas) == 1

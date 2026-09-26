@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import httpx
 import pytest
-from assistente import configuracao as configuracao_modulo
+from assistente import configuracao
 from assistente.layla import cliente, erros, interface
 
 from tests.apoio import (
@@ -33,10 +33,8 @@ def _nao_espere_entre_tentativas(monkeypatch: pytest.MonkeyPatch):
 
 
 def _cliente(layla: LaylaDeMentira, **ajustes) -> cliente.ClienteLayla:
-    configuracao = configuracao_modulo.ConfiguracaoLayla(
-        url="http://127.0.0.1:8080", **ajustes
-    )
-    return cliente.ClienteLayla(configuracao, cliente_http=layla.cliente())
+    ajustada = configuracao.ConfiguracaoLayla(url="http://127.0.0.1:8080", **ajustes)
+    return cliente.ClienteLayla(ajustada, cliente_http=layla.cliente())
 
 
 # ── contrato ─────────────────────────────────────────────────────────────────

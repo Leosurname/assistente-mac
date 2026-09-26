@@ -2,11 +2,11 @@
 
 from __future__ import annotations
 
-from assistente import sessao as sessao_modulo
+from assistente import sessao
 
 
 def test_sessao_nova_quando_nao_ha_identificador():
-    registro = sessao_modulo.RegistroDeSessoes()
+    registro = sessao.RegistroDeSessoes()
 
     primeira = registro.obter(None)
     segunda = registro.obter(None)
@@ -16,7 +16,7 @@ def test_sessao_nova_quando_nao_ha_identificador():
 
 
 def test_o_mesmo_identificador_devolve_a_mesma_sessao():
-    registro = sessao_modulo.RegistroDeSessoes()
+    registro = sessao.RegistroDeSessoes()
 
     primeira = registro.obter("caixa-1")
     primeira.registrar("quero terminal", "{}")
@@ -27,7 +27,7 @@ def test_o_mesmo_identificador_devolve_a_mesma_sessao():
 
 
 def test_sessao_expirada_vira_sessao_limpa():
-    registro = sessao_modulo.RegistroDeSessoes(validade=0.0)
+    registro = sessao.RegistroDeSessoes(validade=0.0)
     antiga = registro.obter("caixa-1")
     antiga.registrar("quero terminal", "{}")
     antiga.atualizada_em -= 10
@@ -40,7 +40,7 @@ def test_sessao_expirada_vira_sessao_limpa():
 
 def test_encerrar_esquece_a_sessao():
     """A caixa sumiu, a conversa acabou."""
-    registro = sessao_modulo.RegistroDeSessoes()
+    registro = sessao.RegistroDeSessoes()
     registro.obter("caixa-1")
 
     registro.encerrar("caixa-1")
@@ -49,7 +49,7 @@ def test_encerrar_esquece_a_sessao():
 
 
 def test_limpar_descarta_so_as_vencidas():
-    registro = sessao_modulo.RegistroDeSessoes(validade=60.0)
+    registro = sessao.RegistroDeSessoes(validade=60.0)
     vencida = registro.obter("velha")
     registro.obter("nova")
     vencida.atualizada_em -= 120
@@ -59,20 +59,20 @@ def test_limpar_descarta_so_as_vencidas():
 
 
 def test_o_historico_nao_cresce_sem_limite():
-    sessao = sessao_modulo.Sessao(identificador="caixa-1")
+    atual = sessao.Sessao(identificador="caixa-1")
 
-    for i in range(sessao_modulo.MAXIMO_DE_TURNOS + 5):
-        sessao.registrar(f"pedido {i}", "{}")
+    for i in range(sessao.MAXIMO_DE_TURNOS + 5):
+        atual.registrar(f"pedido {i}", "{}")
 
-    assert len(sessao.pedidos) == sessao_modulo.MAXIMO_DE_TURNOS
-    assert len(sessao.historico) == sessao_modulo.MAXIMO_DE_TURNOS * 2
+    assert len(atual.pedidos) == sessao.MAXIMO_DE_TURNOS
+    assert len(atual.historico) == sessao.MAXIMO_DE_TURNOS * 2
 
 
 def test_registrar_reinicia_a_contagem_de_validade():
-    sessao = sessao_modulo.Sessao(identificador="caixa-1", validade=10.0)
-    sessao.atualizada_em -= 100
-    assert sessao.expirou()
+    atual = sessao.Sessao(identificador="caixa-1", validade=10.0)
+    atual.atualizada_em -= 100
+    assert atual.expirou()
 
-    sessao.registrar("quero terminal", "{}")
+    atual.registrar("quero terminal", "{}")
 
-    assert not sessao.expirou()
+    assert not atual.expirou()

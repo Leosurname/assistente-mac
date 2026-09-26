@@ -13,8 +13,7 @@ from collections.abc import Sequence
 from dataclasses import dataclass
 from typing import Any
 
-from assistente import acoes, nomes
-from assistente import tela as tela_modulo
+from assistente import acoes, nomes, tela
 
 # Reexportados: outros modulos usam validacao.app_foi_citado e validacao.normalizar.
 app_foi_citado = nomes.app_foi_citado
@@ -66,7 +65,7 @@ class ResultadoDaValidacao:
 def validar_acoes(
     brutas: Any,
     *,
-    tela: tela_modulo.RetratoDaTela,
+    tela: tela.RetratoDaTela,
     textos_do_usuario: Sequence[str],
 ) -> ResultadoDaValidacao:
     """Filtra a lista de acoes da Layla, guardando o motivo de cada recusa."""
@@ -95,7 +94,7 @@ def validar_acoes(
 
 
 def _motivo_da_recusa(
-    bruta: Any, *, tela: tela_modulo.RetratoDaTela, textos_do_usuario: Sequence[str]
+    bruta: Any, *, tela: tela.RetratoDaTela, textos_do_usuario: Sequence[str]
 ) -> str | None:
     if not isinstance(bruta, dict):
         return "a acao nao e um objeto"
@@ -125,7 +124,7 @@ def _motivo_da_recusa(
 
 
 def _motivo_da_recusa_de_posicionamento(
-    bruta: dict, *, tela: tela_modulo.RetratoDaTela
+    bruta: dict, *, tela: tela.RetratoDaTela
 ) -> str | None:
     regiao = bruta.get("regiao")
     if regiao is None:
