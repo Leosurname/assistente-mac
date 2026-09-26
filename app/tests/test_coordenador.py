@@ -152,6 +152,46 @@ def test_fluxo_completo_ate_a_caixa_sumir():
     assert not microfone.ouvindo
 
 
+def test_silencio_depois_da_fala_manda_o_pedido():
+    coordenador, _, _, relogio, enviados = montar()
+    coordenador.ao_atalho()
+    coordenador.ao_transcrever("coloca o safari na direita", final=False)
+
+    relogio.agora = 1.1
+    coordenador.ao_tique()
+    assert enviados == []
+
+    relogio.agora = 1.2
+    coordenador.ao_tique()
+    assert [e["texto"] for e in enviados] == ["coloca o safari na direita"]
+    assert coordenador.estado is Estado.PENSANDO
+
+
+def test_falar_de_novo_reinicia_a_contagem_do_silencio():
+    coordenador, _, _, relogio, enviados = montar()
+    coordenador.ao_atalho()
+    coordenador.ao_transcrever("coloca o safari", final=False)
+
+    relogio.agora = 1.0
+    coordenador.ao_transcrever("coloca o safari na direita", final=False)
+    relogio.agora = 2.0
+    coordenador.ao_tique()
+
+    assert enviados == []
+
+
+def test_fala_enquanto_a_layla_pensa_nao_vira_outro_pedido():
+    coordenador, caixa, _, relogio, enviados = montar()
+    coordenador.ao_atalho()
+    coordenador.ao_transcrever("coloca o safari na direita", final=True)
+
+    coordenador.ao_transcrever("e o terminal", final=True)
+    relogio.agora = 5.0
+    coordenador.ao_tique()
+
+    assert len(enviados) == 1
+    assert caixa.texto == "coloca o safari na direita"
+
 def test_digitar_faz_sumir_e_encerra_a_sessao():
     coordenador, caixa, _, _, enviados = montar()
     coordenador.ao_atalho()
@@ -180,9 +220,21 @@ def test_pedido_emendado_reusa_a_sessao():
     coordenador.ao_transcrever("quero terminal e safari", final=True)
     coordenador.ao_responder(RESPOSTA)
 
+    coordenador.ao_atalho()
     coordenador.ao_transcrever("agora joga o safari pra direita", final=True)
 
     assert enviados[-1]["sessao"] == "s1"
+
+
+def test_microfone_desliga_ao_mandar_e_nao_ouve_o_concluido_da_caixa():
+    coordenador, _, microfone, _, enviados = montar()
+    coordenador.ao_atalho()
+    coordenador.ao_transcrever("abre o terminal", final=True)
+
+    assert not microfone.ouvindo
+    coordenador.ao_responder(RESPOSTA)
+    assert not microfone.ouvindo
+    assert len(enviados) == 1
 
 
 def test_erro_do_backend_aparece_na_caixa():
