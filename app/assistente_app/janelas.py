@@ -65,12 +65,7 @@ class ExecutorDeJanelas:
         if caminho is None:
             return f"não achei o {nome}"
 
-        area = NSWorkspace.sharedWorkspace()
-        configuracao = NSWorkspaceOpenConfiguration.configuration()
-        configuracao.setActivates_(True)
-        area.openApplicationAtURL_configuration_completionHandler_(
-            NSURL.fileURLWithPath_(caminho), configuracao, None
-        )
+        _trazer_para_frente(NSURL.fileURLWithPath_(caminho))
         return None
 
     def _fechar(self, nome: str) -> str | None:
@@ -84,7 +79,7 @@ class ExecutorDeJanelas:
         app = rodando(nome)
         if app is None:
             return f"o {nome} não está aberto"
-        app.activateWithOptions_(0)
+        _trazer_para_frente(app.bundleURL())
         return None
 
     def _minimizar(self, nome: str) -> str | None:
@@ -114,3 +109,14 @@ class ExecutorDeJanelas:
         AXUIElementSetAttributeValue(janela, kAXPositionAttribute, ponto)
         AXUIElementSetAttributeValue(janela, kAXSizeAttribute, tamanho)
         return None
+
+
+def _trazer_para_frente(url) -> None:  # noqa: ANN001
+    # Desde o macOS 14, activateWithOptions_ vindo de app em segundo plano
+    # devolve True e nao faz nada. Abrir pelo LaunchServices ativa de verdade,
+    # e para app ja aberto so traz para frente.
+    configuracao = NSWorkspaceOpenConfiguration.configuration()
+    configuracao.setActivates_(True)
+    NSWorkspace.sharedWorkspace().openApplicationAtURL_configuration_completionHandler_(
+        url, configuracao, None
+    )
