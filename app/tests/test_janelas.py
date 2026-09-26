@@ -18,8 +18,8 @@ class AppFalso:
         self.nome = nome
         self._mac = mac
 
-    def activateWithOptions_(self, _: int) -> None:  # noqa: N802
-        self._mac.feito.append(("focar", self.nome))
+    def bundleURL(self) -> str:  # noqa: N802
+        return f"/Applications/{self.nome}.app"
 
     def terminate(self) -> None:
         self._mac.feito.append(("fechar", self.nome))
@@ -88,7 +88,7 @@ def executar(*acoes: Acao) -> list[str]:
 
 def test_abrir_app_ja_aberto_so_traz_para_frente(mac: MacFalso):
     assert executar(Acao("abrir_app", "Safari")) == []
-    assert mac.feito == [("focar", "Safari")]
+    assert mac.feito == [("abrir", "/Applications/Safari.app")]
 
 
 def test_abrir_app_fechado_abre_o_pacote_do_disco(mac: MacFalso):
