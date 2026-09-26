@@ -14,8 +14,7 @@ from collections.abc import AsyncIterator, Sequence
 from typing import Any
 
 import httpx
-
-from assistente import configuracao as configuracao_modulo
+from assistente.ambiente import configuracao as configuracao_modulo
 from assistente.layla import erros, interface, protocolo
 
 registrador = logging.getLogger(__name__)

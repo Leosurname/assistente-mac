@@ -58,11 +58,11 @@ transporte que ele usa para falar WebSocket.
 ```
 pedido (WebSocket)
    │
-   ├─ tela.py        le e confere o retrato da tela
-   ├─ sessao.py      recupera o historico curto
-   ├─ prompt.py      junta transcricao, retrato e catalogo
-   ├─ layla/         manda para a Layla com json_schema
-   ├─ validacao.py   filtra o que voltou
+   ├─ tela/retrato.py        le e confere o retrato da tela
+   ├─ pedido/sessao.py       recupera o historico curto
+   ├─ pedido/prompt.py       junta transcricao, retrato e catalogo
+   ├─ layla/                 manda para a Layla com json_schema
+   ├─ acoes/validacao.py     filtra o que voltou
    └─ resposta: {"tipo": "acoes", "acoes": [...], "fala": "..."}
 ```
 
@@ -105,22 +105,33 @@ não existe motivo para alguém de fora alcançar isso.
 ```
 main.py               unico ponto de entrada: monta e sobe o aplicativo
 assistente/
-  configuracao.py     leitura das variaveis de ambiente
-  servidor.py         FastAPI: WebSocket /ws e health check /health
-  tradutor.py         pedido em texto, acoes validadas na saida
-  prompt.py           montagem do prompt
-  acoes.py            catalogo fechado e JSON Schema da resposta
-  validacao.py        as quatro perguntas
-  nomes.py            apelidos de aplicativo e o casamento com a fala
-  tela.py             leitura do retrato da tela
-  sessao.py           historico curto, expira junto com a caixa
-  registro.py         logs
+  rede/
+    servidor.py       FastAPI: WebSocket /ws e health check /health
+  ambiente/
+    configuracao.py   leitura das variaveis de ambiente
+    registro.py       logs
+    versao.py         __version__ do backend
   layla/
     interface.py      Mensagem, ClienteDeLLM, corte de contexto, formato_json
     cliente.py        ClienteLayla: HTTP, streaming, novas tentativas
     protocolo.py      corpo do pedido e leitura da resposta (formato OpenAI)
     erros.py          erros com mensagem pronta para o usuario
+  pedido/
+    tradutor.py       pedido em texto, acoes validadas na saida
+    prompt.py         montagem do prompt
+    sessao.py         historico curto, expira junto com a caixa
+  acoes/
+    catalogo.py       catalogo fechado e JSON Schema da resposta
+    validacao.py      as quatro perguntas
+    nomes.py          apelidos de aplicativo e o casamento com a fala
+  tela/
+    retrato.py        leitura do retrato da tela
 ```
+
+Nenhum nome de arquivo se repete no backend, e nenhuma pasta tem `__init__.py`:
+o Python 3 importa uma pasta como pacote sem ele. O import segue o nome do
+arquivo, nunca o nome de uma classe ou funcao: `from assistente.ambiente import
+configuracao` e depois `configuracao.ConfiguracaoLayla`.
 
 O resto do backend depende de `ClienteDeLLM`, nunca de `ClienteLayla`. Trocar de
 provedor é escrever outra implementação do protocolo.

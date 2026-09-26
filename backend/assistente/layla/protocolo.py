@@ -7,7 +7,7 @@ import logging
 from collections.abc import Sequence
 from typing import Any
 
-from assistente import configuracao
+from assistente.ambiente import configuracao
 from assistente.layla import erros, interface
 
 registrador = logging.getLogger(__name__)

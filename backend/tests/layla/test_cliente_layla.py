@@ -4,9 +4,8 @@ from __future__ import annotations
 
 import httpx
 import pytest
-from assistente import configuracao
+from assistente.ambiente import configuracao
 from assistente.layla import cliente, erros, interface
-
 from tests.apoio import (
     LaylaDeMentira,
     erro_de_conexao,

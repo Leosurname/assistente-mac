@@ -2,14 +2,16 @@
 
 from __future__ import annotations
 
-from assistente import acoes, prompt, tela
+from assistente.acoes import catalogo
 from assistente.layla import interface
+from assistente.pedido import prompt
+from assistente.tela import retrato
 
-TELA = tela.RetratoDaTela(
-    monitores=(tela.Monitor(3456, 2234),),
+TELA = retrato.RetratoDaTela(
+    monitores=(retrato.Monitor(3456, 2234),),
     apps_abertos=("Finder", "Safari"),
     janelas=(
-        tela.Janela(app="Safari", x=100, y=80, largura=1200, altura=900),
+        retrato.Janela(app="Safari", x=100, y=80, largura=1200, altura=900),
     ),
 )
 
@@ -17,9 +19,9 @@ TELA = tela.RetratoDaTela(
 def test_o_catalogo_inteiro_aparece_nas_instrucoes():
     texto = prompt.instrucoes()
 
-    for acao in acoes.CATALOGO:
+    for acao in catalogo.CATALOGO:
         assert acao in texto
-    for regiao in acoes.REGIOES:
+    for regiao in catalogo.REGIOES:
         assert regiao in texto
 
 

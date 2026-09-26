@@ -11,12 +11,12 @@ import logging
 from typing import Any
 
 import uvicorn
+from assistente.ambiente import configuracao, versao
+from assistente.layla import cliente, erros, interface
+from assistente.pedido import sessao, tradutor
+from assistente.tela import retrato
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect
 from starlette.websockets import WebSocketState
-
-import assistente
-from assistente import configuracao, sessao, tela, tradutor
-from assistente.layla import cliente, erros, interface
 
 registrador = logging.getLogger(__name__)
 
@@ -47,7 +47,7 @@ def subir(aplicativo: FastAPI) -> None:
 def criar_aplicativo(
     llm: interface.ClienteDeLLM, sessoes: sessao.RegistroDeSessoes
 ) -> FastAPI:
-    aplicativo = FastAPI(title="Assistente Mac", version=assistente.__version__)
+    aplicativo = FastAPI(title="Assistente Mac", version=versao.__version__)
     aplicativo.state.sessoes = sessoes
     aplicativo.state.llm = llm
 
@@ -57,7 +57,7 @@ def criar_aplicativo(
         layla_no_ar = await aplicativo.state.llm.esta_disponivel()
         return {
             "estado": "ok" if layla_no_ar else "degradado",
-            "versao": assistente.__version__,
+            "versao": versao.__version__,
             "layla": "no ar" if layla_no_ar else "fora do ar",
             "sessoes": sessoes_vivas,
         }
@@ -108,15 +108,17 @@ async def _responder(aplicativo: FastAPI, bruto: Any) -> dict[str, Any]:
     texto = texto.strip()[:LIMITE_DO_TEXTO]
 
     try:
-        retrato = tela.RetratoDaTela.do_dicionario(bruto.get("tela"))
-    except tela.RetratoInvalido as erro:
+        tela_lida = retrato.RetratoDaTela.do_dicionario(bruto.get("tela"))
+    except retrato.RetratoInvalido as erro:
         return _erro(f"o retrato da tela veio fora do formato: {erro}")
 
     identificador = bruto.get("sessao")
     atual = sessoes.obter(identificador if isinstance(identificador, str) else None)
 
     try:
-        traducao = await tradutor.traduzir(texto, retrato, atual, aplicativo.state.llm)
+        traducao = await tradutor.traduzir(
+            texto, tela_lida, atual, aplicativo.state.llm
+        )
     except erros.ErroDaLLM as erro:
         registrador.error("Falha ao falar com a Layla: %s", erro)
         return _erro(erro.mensagem_amigavel)

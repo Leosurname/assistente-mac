@@ -3,12 +3,13 @@
 from __future__ import annotations
 
 import pytest
-from assistente import tela, validacao
+from assistente.acoes import validacao
+from assistente.tela import retrato
 
-TELA = tela.RetratoDaTela(
-    monitores=(tela.Monitor(largura=3456, altura=2234),),
+TELA = retrato.RetratoDaTela(
+    monitores=(retrato.Monitor(largura=3456, altura=2234),),
     apps_abertos=("Finder", "Safari", "Terminal", "Claude Code", "Spotify"),
-    janelas=(tela.Janela(app="Safari", x=100, y=80, largura=1200, altura=900),),
+    janelas=(retrato.Janela(app="Safari", x=100, y=80, largura=1200, altura=900),),
 )
 
 PEDIDO = ["quero terminal e safari, e ja deixa o claude code aberto"]
@@ -128,8 +129,8 @@ def test_normalizar_tira_acento_e_caixa():
 
 
 def test_app_desconhecido_pela_maquina_e_recusado():
-    pequena = tela.RetratoDaTela(
-        monitores=(tela.Monitor(1920, 1080),),
+    pequena = retrato.RetratoDaTela(
+        monitores=(retrato.Monitor(1920, 1080),),
         apps_abertos=("Finder",),
         apps_instalados=("Safari", "Terminal"),
     )
@@ -146,8 +147,8 @@ def test_app_desconhecido_pela_maquina_e_recusado():
 
 def test_abrir_app_que_ainda_nao_esta_aberto_passa():
     """E o caso normal de `abrir_app`: o Terminal esta instalado, nao aberto."""
-    pequena = tela.RetratoDaTela(
-        monitores=(tela.Monitor(1920, 1080),),
+    pequena = retrato.RetratoDaTela(
+        monitores=(retrato.Monitor(1920, 1080),),
         apps_abertos=("Finder",),
         apps_instalados=("Finder", "Safari", "Terminal"),
     )
@@ -166,7 +167,7 @@ def test_sem_retrato_a_checagem_de_existencia_fica_com_a_camada_nativa():
     resultado = _validar(
         [{"acao": "abrir_app", "app": "Photoshop"}],
         textos=["abre o photoshop"],
-        tela=tela.RetratoDaTela(),
+        tela=retrato.RetratoDaTela(),
     )
 
     assert len(resultado.aprovadas) == 1

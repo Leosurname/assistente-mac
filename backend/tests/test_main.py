@@ -6,7 +6,7 @@ from typing import Any
 
 import pytest
 import uvicorn
-from assistente import registro
+from assistente.ambiente import registro
 from fastapi import FastAPI
 
 MAIN = Path(__file__).resolve().parent.parent / "main.py"

@@ -6,8 +6,10 @@ import json
 import logging
 from dataclasses import dataclass
 
-from assistente import acoes, prompt, sessao, tela, validacao
+from assistente.acoes import catalogo, validacao
 from assistente.layla import erros, interface
+from assistente.pedido import prompt, sessao
+from assistente.tela import retrato
 
 registrador = logging.getLogger(__name__)
 
@@ -31,7 +33,7 @@ class Traducao:
 
 async def traduzir(
     transcricao: str,
-    tela: tela.RetratoDaTela,
+    tela: retrato.RetratoDaTela,
     sessao: sessao.Sessao,
     llm: interface.ClienteDeLLM,
 ) -> Traducao:
@@ -39,7 +41,7 @@ async def traduzir(
     mensagens = prompt.montar(transcricao, tela, list(sessao.historico))
 
     formato_resposta = interface.formato_json(
-        "resposta_do_assistente", acoes.esquema_da_resposta()
+        "resposta_do_assistente", catalogo.esquema_da_resposta()
     )
     bruta = await llm.conversar(mensagens, formato_resposta=formato_resposta)
 

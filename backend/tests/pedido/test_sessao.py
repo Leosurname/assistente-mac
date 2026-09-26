@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from assistente import sessao
+from assistente.pedido import sessao
 
 
 def test_sessao_nova_quando_nao_ha_identificador():

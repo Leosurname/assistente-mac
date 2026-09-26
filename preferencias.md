@@ -73,7 +73,8 @@ isso não se usa `ruff format`: ele tira os parênteses.
 
 No backend, todos os outros arquivos fazem as funções; o `main.py` só chama.
 Só o `main.py` é executado, e o resto é import pelo nome do outro arquivo:
-`from assistente import configuracao` → `configuracao.ConfiguracaoLayla`.
+`from assistente.ambiente import configuracao` → `configuracao.ConfiguracaoLayla`.
+Separa tudo em várias pastas e não repita o nome de arquivos.
 
 ## Escopo
 

@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import pytest
-from assistente import configuracao
+from assistente.ambiente import configuracao
 
 
 def test_usa_padroes_quando_o_ambiente_esta_vazio(monkeypatch: pytest.MonkeyPatch):

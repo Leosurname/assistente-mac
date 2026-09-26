@@ -7,8 +7,9 @@ from collections.abc import AsyncIterator, Sequence
 from typing import Any
 
 import pytest
-from assistente import servidor, sessao
 from assistente.layla import erros, interface
+from assistente.pedido import sessao
+from assistente.rede import servidor
 from fastapi.testclient import TestClient
 
 TELA = {
