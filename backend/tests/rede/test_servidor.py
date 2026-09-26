@@ -241,6 +241,43 @@ def test_pedido_malformado_nao_chega_a_incomodar_a_layla():
     assert llm.chamadas == []
 
 
+# ── limites do pedido ────────────────────────────────────────────────────────
+
+
+def test_texto_maior_que_o_limite_e_cortado_antes_de_ir_para_a_layla():
+    llm = LaylaDeMentira([_resposta([])])
+    # "z" nao aparece no resumo da tela: sobra so o que veio do pedido do usuario.
+    texto = "z" * (servidor.LIMITE_DO_TEXTO + 500)
+
+    with _cliente(llm) as cliente, cliente.websocket_connect("/ws") as ws:
+        ws.send_json({"tipo": "pedido", "texto": texto, "tela": TELA})
+        ws.receive_json()
+
+    ultima_mensagem = llm.chamadas[0][-1]
+    assert ultima_mensagem.conteudo.count("z") == servidor.LIMITE_DO_TEXTO
+
+
+def test_mensagem_que_nao_e_json_fecha_a_conexao_com_erro():
+    from starlette.websockets import WebSocketDisconnect
+
+    llm = LaylaDeMentira([])
+
+    with _cliente(llm) as cliente, cliente.websocket_connect("/ws") as ws:
+        ws.send_text("isso nao e json")
+        corpo = ws.receive_json()
+
+        assert corpo["tipo"] == "erro"
+        with pytest.raises(WebSocketDisconnect):
+            ws.receive_json()
+
+
+def test_validade_de_sessao_invalida_no_ambiente_da_erro_claro(monkeypatch):
+    monkeypatch.setenv("ASSISTENTE_VALIDADE_SESSAO", "nao e numero")
+
+    with pytest.raises(ValueError, match="ASSISTENTE_VALIDADE_SESSAO"):
+        servidor.montar_do_ambiente()
+
+
 # ── erros da Layla ───────────────────────────────────────────────────────────
 
 
