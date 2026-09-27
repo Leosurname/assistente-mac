@@ -12,7 +12,7 @@ from AppKit import (
 )
 from Foundation import NSRunLoop
 
-from assistente_app import contexto
+from assistente_app import contexto, voz
 from assistente_app.atalho import PermissaoNegada, Teclado
 from assistente_app.cliente import ClienteDoBackend
 from assistente_app.configuracao import Configuracao
@@ -46,11 +46,14 @@ def principal() -> int:
     )
     cliente.iniciar()
 
-    coordenador = _montar_coordenador(configuracao, caixa, executor, cliente)
+    microfone = _criar_microfone(configuracao, ponte)
+    coordenador = _montar_coordenador(configuracao, caixa, executor, cliente, microfone)
     ponte.coordenador = coordenador
     if not _instalar_teclado(coordenador):
         return 1
     _iniciar_tique(coordenador)
+    if (microfone is not None):
+        _pedir_permissao_de_fala(coordenador)
 
     registrador.info("Assistente Mac de pé. Aperte Option+9.")
     NSRunLoop.currentRunLoop()
@@ -66,10 +69,19 @@ def _criar_aplicativo() -> NSApplication:
     return aplicativo
 
 
-# A beta e so texto: o microfone de voz.py fica de fora ate a fase de voz.
-def _montar_coordenador(configuracao, caixa, executor, cliente):  # noqa: ANN001, ANN202
+# A voz e opcional: sem microfone o app sobe e Option+9 so avisa.
+def _criar_microfone(configuracao: Configuracao, ponte: Ponte) -> voz.Microfone | None:
+    try:
+        return voz.Microfone(configuracao.idioma, ponte.ao_transcrever)
+    except voz.MicrofoneIndisponivel as erro:
+        registrador.warning("Sem voz: %s", erro)
+        return None
+
+
+def _montar_coordenador(configuracao, caixa, executor, cliente, microfone):  # noqa: ANN001, ANN202
     return Coordenador(
         caixa=caixa,
+        microfone=microfone,
         executor=executor,
         retrato=contexto.montar,
         enviar=cliente.enviar,
@@ -97,3 +109,13 @@ def _iniciar_tique(coordenador: Coordenador) -> None:
     NSTimer.scheduledTimerWithTimeInterval_repeats_block_(
         INTERVALO_DO_TIQUE, True, lambda _: coordenador.ao_tique()
     )
+
+
+def _pedir_permissao_de_fala(coordenador: Coordenador) -> None:
+    def responder(concedida: bool) -> None:
+        estado = "liberado" if concedida else "negado"
+        registrador.info("Reconhecimento de fala %s", estado)
+        if not concedida:
+            despachar_na_principal(coordenador.sem_microfone)
+
+    voz.Microfone.pedir_permissao(responder)

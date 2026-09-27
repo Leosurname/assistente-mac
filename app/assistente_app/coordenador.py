@@ -24,6 +24,7 @@ from assistente_app.protocolo import (
 registrador = logging.getLogger(__name__)
 
 MENSAGEM_DE_FALHA = "não consegui falar com a Layla"
+SEM_MICROFONE = "sem microfone"
 
 # O reconhecimento do macOS so marca a frase como final quando o audio acaba, e
 # o microfone segue ligado: quem encerra o pedido e o silencio depois da fala.
@@ -40,14 +41,6 @@ class Caixa(Protocol):
 class Microfone(Protocol):
     def ouvir(self) -> None: ...
     def parar(self) -> None: ...
-
-
-class SemMicrofone:
-    def ouvir(self) -> None:
-        pass
-
-    def parar(self) -> None:
-        pass
 
 
 class Executor(Protocol):
@@ -69,7 +62,7 @@ class Coordenador:
         microfone: Microfone | None = None,
     ) -> None:
         self.caixa = caixa
-        self.microfone = microfone or SemMicrofone()
+        self.microfone = microfone
         self.executor = executor
         self.retrato = retrato
         self.enviar = enviar
@@ -85,9 +78,17 @@ class Coordenador:
         efeito = self.dispensa.atalho(self.relogio())
         if efeito is Efeito.MOSTRAR:
             self.caixa.mostrar()
-        self.caixa.escrever("")
         self.caixa.marcar_pensando(False)
-        self.microfone.ouvir()
+        if (self._ouvir()):
+            self.caixa.escrever("")
+        else:
+            self.caixa.escrever(SEM_MICROFONE)
+            # O aviso some em 5 s, como uma resposta: nao ha pedido a esperar.
+            self.dispensa.concluido(self.relogio())
+
+    def sem_microfone(self) -> None:
+        self._parar_microfone()
+        self.microfone = None
 
     def ao_transcrever(self, texto: str, final: bool) -> None:
         """Chegou texto do microfone, parcial ou definitivo."""
@@ -141,7 +142,7 @@ class Coordenador:
         self._fala = None
         # O microfone desliga: ligado, ele ouve o "concluído" falado pela caixa
         # e manda de novo como pedido. Pedido emendado e outro Option+9.
-        self.microfone.parar()
+        self._parar_microfone()
         self.dispensa.pedido_enviado()
         self.caixa.marcar_pensando(True)
         self.enviar(montar_pedido(texto, self.retrato(), self.sessao))
@@ -170,7 +171,7 @@ class Coordenador:
     def _aplicar(self, efeito: Efeito) -> None:
         if efeito is not Efeito.OCULTAR:
             return
-        self.microfone.parar()
+        self._parar_microfone()
         self.caixa.ocultar()
         if self.sessao:
             # A sessao morre junto com a caixa: um pedido novo nao deve herdar
@@ -180,6 +181,20 @@ class Coordenador:
             except Exception as erro:  # noqa: BLE001
                 registrador.debug("Nao consegui encerrar a sessao: %s", erro)
             self.sessao = None
+
+    def _ouvir(self) -> bool:
+        if (self.microfone is None):
+            return False
+        try:
+            self.microfone.ouvir()
+        except Exception as erro:  # noqa: BLE001 - sem microfone o app segue de pe
+            registrador.error("Microfone indisponivel: %s", erro)
+            return False
+        return True
+
+    def _parar_microfone(self) -> None:
+        if (self.microfone is not None):
+            self.microfone.parar()
 
     @property
     def estado(self) -> Estado:
