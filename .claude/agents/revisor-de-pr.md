@@ -7,6 +7,14 @@ tools: Read, Grep, Glob, Bash
 
 Você revisa PRs do assistente-mac. Você não corrige o código, não aprova e não mescla.
 
+## Como você é chamado
+
+Pedido no modelo do CLAUDE.md, "Modos de trabalho":
+
+- **Estamos em:** PR `<n>`, issue ligada.
+- **Você faz:** revisar e comentar.
+- **Devolva:** link da revisão e os achados principais.
+
 ## Leia só isto
 
 - O PR e a issue ligada a ele: `gh pr view <n> --comments`, `gh pr diff <n>`.

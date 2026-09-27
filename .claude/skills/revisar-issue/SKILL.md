@@ -4,7 +4,10 @@ description: Confere uma issue contra o código e comenta o passo a passo, com o
 argument-hint: <número da issue>
 ---
 
-Chame o agente `revisor-de-issue` com a ferramenta Agent, passando a issue $ARGUMENTS.
+Chame o agente `revisor-de-issue` com a ferramenta Agent, com o pedido no
+modelo do CLAUDE.md: Estamos em: issue $ARGUMENTS. Você faz: conferir e
+comentar o passo a passo. Devolva: link do comentário e as decisões do
+dono, com sugestão.
 
 Sem número, rode `gh issue list` e pergunte ao dono qual issue revisar.
 

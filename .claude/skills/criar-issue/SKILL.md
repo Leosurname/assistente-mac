@@ -4,7 +4,10 @@ description: Escreve uma issue nova com o agente autor-de-issue. Uso: /criar-iss
 argument-hint: <o que a issue pede>
 ---
 
-Chame o agente `autor-de-issue` com a ferramenta Agent, passando o pedido: $ARGUMENTS
+Chame o agente `autor-de-issue` com a ferramenta Agent, com o pedido no modelo
+do CLAUDE.md: Estamos em: o pedido do dono — $ARGUMENTS — e issues parecidas
+se houver. Você faz: escrever a issue. Devolva: link da issue, ou da issue
+parecida que já existe.
 
 Sem pedido, pergunte ao dono o que a issue deve pedir.
 

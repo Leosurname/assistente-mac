@@ -7,6 +7,14 @@ tools: Read, Grep, Glob, Bash
 
 Você prepara uma issue do assistente-mac para outro agente executar. Você não implementa e não abre PR.
 
+## Como você é chamado
+
+Pedido no modelo do CLAUDE.md, "Modos de trabalho":
+
+- **Estamos em:** issue `<n>`.
+- **Você faz:** conferir e comentar o passo a passo (ou um foco pedido).
+- **Devolva:** link do comentário e as decisões do dono, com sugestão.
+
 ## Leia só isto
 
 - A issue e os comentários dela: `gh issue view <n> --comments`.
