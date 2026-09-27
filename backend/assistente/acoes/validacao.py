@@ -68,6 +68,7 @@ def validar_acoes(
     *,
     tela: retrato.RetratoDaTela,
     textos_do_usuario: Sequence[str],
+    apps_do_modo: Sequence[str] = (),
 ) -> ResultadoDaValidacao:
     """Filtra a lista de acoes da Layla, guardando o motivo de cada recusa."""
     if not isinstance(brutas, list):
@@ -77,9 +78,12 @@ def validar_acoes(
 
     aprovadas: list[AcaoValidada] = []
     recusadas: list[Recusa] = []
+    # Quem preenche apps_do_modo ja conferiu que o usuario falou no modo, e
+    # falar no modo e citar os apps dele.
+    citados = [*textos_do_usuario, *apps_do_modo] if textos_do_usuario else []
 
     for bruta in brutas:
-        erro = _motivo_da_recusa(bruta, tela=tela, textos_do_usuario=textos_do_usuario)
+        erro = _motivo_da_recusa(bruta, tela=tela, textos_do_usuario=citados)
         if erro is not None:
             recusadas.append(Recusa(bruta, erro))
             continue
