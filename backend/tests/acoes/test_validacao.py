@@ -243,7 +243,7 @@ def test_coordenadas_negativas_sao_recusadas():
 
 
 def test_regiao_em_acao_que_nao_posiciona_e_recusada():
-    acoes = [{"acao": "abrir_app", "app": "Terminal", "regiao": "tela_cheia"}]
+    acoes = [{"acao": "abrir_app", "app": "Terminal", "regiao": "maximizada"}]
 
     assert _validar(acoes).aprovadas == ()
 

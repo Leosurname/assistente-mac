@@ -146,7 +146,7 @@ def test_uma_acao_que_quebra_nao_impede_as_seguintes(
     monkeypatch.setattr(janelas, "AXUIElementSetAttributeValue", quebrar)
 
     falhas = executar(
-        Acao("posicionar", "Safari", "tela_cheia"), Acao("abrir_app", "Terminal")
+        Acao("posicionar", "Safari", "maximizada"), Acao("abrir_app", "Terminal")
     )
 
     assert len(falhas) == 1
