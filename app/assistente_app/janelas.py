@@ -8,11 +8,15 @@ Nada aqui executa texto. `abrir_app` recebe um nome de aplicativo e chama
 from __future__ import annotations
 
 import logging
+import time
 
 from AppKit import NSWorkspace, NSWorkspaceOpenConfiguration
 from ApplicationServices import (
+    AXUIElementCopyAttributeValue,
+    AXUIElementIsAttributeSettable,
     AXUIElementSetAttributeValue,
     AXValueCreate,
+    kAXErrorSuccess,
     kAXPositionAttribute,
     kAXSizeAttribute,
     kAXValueTypeCGPoint,
@@ -26,6 +30,10 @@ from assistente_app.protocolo import Acao
 from assistente_app.regioes import RegiaoDesconhecida, calcular
 
 registrador = logging.getLogger(__name__)
+
+ATRIBUTO_TELA_CHEIA = "AXFullScreen"
+ESPERA_SAIR_DA_TELA_CHEIA = 0.25
+TENTATIVAS_SAIR_DA_TELA_CHEIA = 20
 
 
 class ExecutorDeJanelas:
@@ -55,6 +63,8 @@ class ExecutorDeJanelas:
                 return self._minimizar(acao.app)
             case "posicionar":
                 return self._posicionar(acao.app, acao.regiao or "")
+            case "entrar_tela_cheia":
+                return self._entrar_tela_cheia(acao.app)
         return f"não sei fazer {acao.acao!r}"
 
     def _abrir(self, nome: str) -> str | None:
@@ -89,6 +99,16 @@ class ExecutorDeJanelas:
         AXUIElementSetAttributeValue(janela, "AXMinimized", True)
         return None
 
+    def _entrar_tela_cheia(self, nome: str) -> str | None:
+        janela = primeira_janela(nome)
+        if janela is None:
+            return f"o {nome} não tem janela para entrar em tela cheia"
+        if not AXUIElementIsAttributeSettable(janela, ATRIBUTO_TELA_CHEIA):
+            return f"o {nome} não entra em tela cheia"
+        if not _em_tela_cheia(janela):
+            AXUIElementSetAttributeValue(janela, ATRIBUTO_TELA_CHEIA, True)
+        return None
+
     def _posicionar(self, nome: str, regiao: str) -> str | None:
         try:
             alvo = calcular(regiao, contexto.area_util())
@@ -98,6 +118,13 @@ class ExecutorDeJanelas:
         janela = primeira_janela(nome, esperar=True)
         if janela is None:
             return f"o {nome} não tem janela para posicionar"
+
+        # A troca de tela cheia e animada: so grava posicao e tamanho depois
+        # que a janela sair de verdade, senao o sistema desfaz o movimento.
+        if _em_tela_cheia(janela):
+            AXUIElementSetAttributeValue(janela, ATRIBUTO_TELA_CHEIA, False)
+            if not _esperar_sair_da_tela_cheia(janela):
+                return f"o {nome} não saiu da tela cheia"
 
         ponto = AXValueCreate(kAXValueTypeCGPoint, (float(alvo.x), float(alvo.y)))
         tamanho = AXValueCreate(
@@ -109,6 +136,19 @@ class ExecutorDeJanelas:
         AXUIElementSetAttributeValue(janela, kAXPositionAttribute, ponto)
         AXUIElementSetAttributeValue(janela, kAXSizeAttribute, tamanho)
         return None
+
+
+def _em_tela_cheia(janela) -> bool:  # noqa: ANN001
+    codigo, valor = AXUIElementCopyAttributeValue(janela, ATRIBUTO_TELA_CHEIA, None)
+    return codigo == kAXErrorSuccess and bool(valor)
+
+
+def _esperar_sair_da_tela_cheia(janela) -> bool:  # noqa: ANN001
+    for _ in range(TENTATIVAS_SAIR_DA_TELA_CHEIA):
+        if not _em_tela_cheia(janela):
+            return True
+        time.sleep(ESPERA_SAIR_DA_TELA_CHEIA)
+    return not _em_tela_cheia(janela)
 
 
 def _trazer_para_frente(url) -> None:  # noqa: ANN001
