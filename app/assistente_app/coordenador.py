@@ -42,6 +42,14 @@ class Microfone(Protocol):
     def parar(self) -> None: ...
 
 
+class SemMicrofone:
+    def ouvir(self) -> None:
+        pass
+
+    def parar(self) -> None:
+        pass
+
+
 class Executor(Protocol):
     def executar(self, acoes: tuple) -> list[str]: ...
 
@@ -52,16 +60,16 @@ class Coordenador:
     def __init__(
         self,
         caixa: Caixa,
-        microfone: Microfone,
         executor: Executor,
         retrato: Callable[[], dict[str, Any]],
         enviar: Callable[[dict[str, Any]], None],
         relogio: Callable[[], float],
         espera: float,
         falar: Callable[[str], None] | None = None,
+        microfone: Microfone | None = None,
     ) -> None:
         self.caixa = caixa
-        self.microfone = microfone
+        self.microfone = microfone or SemMicrofone()
         self.executor = executor
         self.retrato = retrato
         self.enviar = enviar

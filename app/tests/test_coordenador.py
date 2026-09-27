@@ -106,6 +106,24 @@ def test_atalho_mostra_a_caixa_e_liga_o_microfone():
     assert coordenador.estado is Estado.ESCUTANDO
 
 
+def test_sem_microfone_o_atalho_mostra_a_caixa_e_esc_fecha():
+    caixa = CaixaFalsa()
+    coordenador = Coordenador(
+        caixa=caixa,
+        executor=ExecutorFalso(),
+        retrato=dict,
+        enviar=lambda _: None,
+        relogio=Relogio(),
+        espera=5.0,
+    )
+
+    coordenador.ao_atalho()
+    assert caixa.visivel
+
+    coordenador.ao_escape()
+    assert not caixa.visivel
+
+
 def test_transcricao_parcial_aparece_na_caixa_sem_enviar_nada():
     coordenador, caixa, _, _, enviados = montar()
     coordenador.ao_atalho()
