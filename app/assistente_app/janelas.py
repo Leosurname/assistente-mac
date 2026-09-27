@@ -11,6 +11,7 @@ import logging
 
 from AppKit import NSWorkspace, NSWorkspaceOpenConfiguration
 from ApplicationServices import (
+    AXIsProcessTrusted,
     AXUIElementSetAttributeValue,
     AXValueCreate,
     kAXPositionAttribute,
@@ -26,6 +27,11 @@ from assistente_app.protocolo import Acao
 from assistente_app.regioes import RegiaoDesconhecida, calcular
 
 registrador = logging.getLogger(__name__)
+
+SEM_ACESSIBILIDADE = (
+    "preciso de permissão de Acessibilidade para mover janelas. Conceda em "
+    "Ajustes do Sistema ▸ Privacidade e Segurança e tente de novo."
+)
 
 
 class ExecutorDeJanelas:
@@ -83,6 +89,9 @@ class ExecutorDeJanelas:
         return None
 
     def _minimizar(self, nome: str) -> str | None:
+        if not AXIsProcessTrusted():
+            return SEM_ACESSIBILIDADE
+
         janela = primeira_janela(nome)
         if janela is None:
             return f"o {nome} não tem janela para minimizar"
@@ -90,6 +99,9 @@ class ExecutorDeJanelas:
         return None
 
     def _posicionar(self, nome: str, regiao: str) -> str | None:
+        if not AXIsProcessTrusted():
+            return SEM_ACESSIBILIDADE
+
         try:
             alvo = calcular(regiao, contexto.area_util())
         except RegiaoDesconhecida as erro:

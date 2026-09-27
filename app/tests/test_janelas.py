@@ -71,6 +71,7 @@ def mac(monkeypatch: pytest.MonkeyPatch) -> MacFalso:
     monkeypatch.setattr(janelas, "primeira_janela", falso.primeira_janela)
     monkeypatch.setattr(janelas, "AXUIElementSetAttributeValue", falso.mudar)
     monkeypatch.setattr(janelas, "AXValueCreate", lambda _tipo, valor: valor)
+    monkeypatch.setattr(janelas, "AXIsProcessTrusted", lambda: True)
     area = SimpleNamespace(sharedWorkspace=lambda: AreaDeTrabalho(falso))
     monkeypatch.setattr(janelas, "NSWorkspace", area)
     monkeypatch.setattr(janelas, "NSURL", SimpleNamespace(fileURLWithPath_=str))
@@ -152,6 +153,28 @@ def test_uma_acao_que_quebra_nao_impede_as_seguintes(
     assert len(falhas) == 1
     assert "acessibilidade negada" in falhas[0]
     assert mac.feito == [("abrir", "/Applications/Terminal.app")]
+
+
+def test_posicionar_sem_acessibilidade_avisa_e_nao_toca_na_janela(
+    mac: MacFalso, monkeypatch: pytest.MonkeyPatch
+):
+    monkeypatch.setattr(janelas, "AXIsProcessTrusted", lambda: False)
+
+    falhas = executar(Acao("posicionar", "Safari", "metade_direita"))
+
+    assert falhas == [janelas.SEM_ACESSIBILIDADE]
+    assert mac.feito == []
+
+
+def test_minimizar_sem_acessibilidade_avisa_e_nao_toca_na_janela(
+    mac: MacFalso, monkeypatch: pytest.MonkeyPatch
+):
+    monkeypatch.setattr(janelas, "AXIsProcessTrusted", lambda: False)
+
+    falhas = executar(Acao("minimizar", "Safari"))
+
+    assert falhas == [janelas.SEM_ACESSIBILIDADE]
+    assert mac.feito == []
 
 
 def test_so_mexe_nos_apps_citados_nas_acoes(mac: MacFalso):
