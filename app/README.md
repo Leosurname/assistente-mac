@@ -31,7 +31,7 @@ O que dá para testar sem macOS fica separado do que não dá:
 | `montagem.py` | sim | Monta tudo e roda o AppKit; o `__main__.py` só chama |
 | `atalho.py` | sim | Event tap do Quartz: Option+9 e digitação |
 | `sobreposicao.py` | sim | O `NSPanel` que não rouba foco |
-| `voz.py` | sim | `SFSpeechRecognizer` + `AVAudioEngine`; fora da beta |
+| `voz.py` | sim | `SFSpeechRecognizer` + `AVAudioEngine`; opcional |
 | `janelas.py` | sim | `NSWorkspace` e a API de acessibilidade |
 | `busca.py` | sim | Acha o aplicativo e a janela pelo nome |
 | `contexto.py` | sim | O retrato da tela |
@@ -94,9 +94,10 @@ python -m assistente_app
 ```
 
 Precisa do backend no ar (`ASSISTENTE_BACKEND`, padrão
-`ws://127.0.0.1:8765/ws`) e da permissão de Acessibilidade do macOS. A beta é
-só texto: o `voz.py` não é montado, e Microfone e Reconhecimento de Fala só
-entram na fase de voz, depois da beta.
+`ws://127.0.0.1:8765/ws`) e da permissão de Acessibilidade do macOS. Microfone
+e Reconhecimento de Fala são para a voz do `Option + 9` e são opcionais: sem
+eles o app sobe e o atalho só mostra "sem microfone" na caixa. O texto entra
+por `Option + 8`.
 
 Sem Acessibilidade, o event tap não é criado e o aplicativo sai com erro
 explicando o que fazer. É a falha mais comum na primeira execução.

@@ -99,15 +99,19 @@ Estas ficam registradas aqui até serem resolvidas, e viram issues próprias:
 1. **Reconhecimento de fala: `SFSpeechRecognizer` do macOS ou Whisper local?**
    O primeiro é imediato e já vem no sistema; o segundo transcreve melhor
    português misturado com nomes técnicos ("Claude Code", "Safari").
-   Só precisa ser resolvida na fase de voz, depois da beta.
-2. **Por onde o texto entra na beta?** Pelo terminal (`scripts/pedido.py`) ou
-   por um campo de texto na sobreposição. O campo exige rever a regra de que
-   digitar faz a caixa sumir.
+   A beta usa o `SFSpeechRecognizer`, que já está no código; a escolha final
+   fica para depois da beta.
+2. ~~**Por onde o texto entra na beta?**~~ Resolvida: por um campo de texto na
+   caixa, aberta por `Option + 8`. Enter envia, a caixa some 5 segundos depois
+   da resposta e `Esc` fecha. Enquanto aberta por `Option + 8`, a caixa pode
+   receber teclado, mas nunca ativa o app nem muda o app da frente. A caixa do
+   `Option + 9` segue a regra antiga: digitar faz ela sumir.
 
 ## Etapas de entrega
 
-**A beta é só texto.** O pedido chega digitado; voz entra numa fase seguinte,
-depois da beta.
+**A beta tem voz e texto.** `Option + 9` ouve o microfone; `Option + 8` abre a
+caixa com um campo de texto. A voz é opcional: sem microfone ou sem permissão
+de fala, o app sobe e `Option + 9` só avisa na caixa.
 
 **Etapa 1 — Esqueleto.** Atalho global, caixa aparecendo e sumindo pelas três
 regras (5 segundos, digitação, `Esc`). Serve para validar a sensação de uso,
@@ -123,8 +127,8 @@ de ponta a ponta, por texto.
 **Etapa 4 — Acabamento.** Tratamento de erro ("não achei o Claude Code"),
 preferências do usuário. Fecha a beta.
 
-**Depois da beta — Voz.** Microfone, transcrição ao vivo na caixa e
-confirmação falada.
+**Depois da beta — Voz.** Escolher o reconhecimento de fala (decisão 1) e
+melhorar a transcrição de nomes técnicos.
 
 ## Como saber se deu certo
 
