@@ -7,12 +7,13 @@ backend/README.md.
 
 from __future__ import annotations
 
+import asyncio
 import logging
 from typing import Any
 
 import uvicorn
 from assistente.ambiente import configuracao, versao
-from assistente.layla import cliente, erros, interface
+from assistente.layla import arranque, cliente, erros, interface
 from assistente.pedido import sessao, tradutor
 from assistente.tela import retrato
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect
@@ -32,13 +33,22 @@ def e_local(endereco: str | None) -> bool:
 
 
 def montar_do_ambiente() -> FastAPI:
-    llm = cliente.ClienteLayla(configuracao.ConfiguracaoLayla.do_ambiente())
+    config = configuracao.ConfiguracaoLayla.do_ambiente()
+    llm = cliente.ClienteLayla(config)
     validade = configuracao.validade_da_sessao_do_ambiente(sessao.VALIDADE_PADRAO)
     sessoes = sessao.RegistroDeSessoes(validade)
-    return criar_aplicativo(llm, sessoes)
+    aplicativo = criar_aplicativo(llm, sessoes)
+    aplicativo.state.configuracao_layla = config
+    return aplicativo
 
 
 def subir(aplicativo: FastAPI) -> None:
+    # So garante a Layla sozinha quando o app veio de montar_do_ambiente(): um
+    # app montado a mao (testes, outro entrypoint) decide isso por conta.
+    config = getattr(aplicativo.state, "configuracao_layla", None)
+    if (config is not None):
+        asyncio.run(arranque.garantir(config, aplicativo.state.llm))
+
     porta = configuracao.porta_do_ambiente(PORTA_PADRAO)
     registrador.info("Assistente Mac ouvindo em %s:%d", ENDERECO_PADRAO, porta)
     uvicorn.run(aplicativo, host=ENDERECO_PADRAO, port=porta, log_config=None)
