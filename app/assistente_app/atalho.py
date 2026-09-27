@@ -28,8 +28,10 @@ from Quartz import (
 
 registrador = logging.getLogger(__name__)
 
+TECLA_8 = 28
 TECLA_9 = 25
 TECLA_ESC = 53
+TECLA_RETURN = 36
 MASCARA_OPTION = 0x00080000
 
 
@@ -43,12 +45,16 @@ class Teclado:
     def __init__(
         self,
         ao_atalho: Callable[[], None],
+        ao_atalho_texto: Callable[[], None],
         ao_digitar: Callable[[], None],
         ao_escape: Callable[[], None],
+        ao_enviar: Callable[[], None],
     ) -> None:
         self._ao_atalho = ao_atalho
+        self._ao_atalho_texto = ao_atalho_texto
         self._ao_digitar = ao_digitar
         self._ao_escape = ao_escape
+        self._ao_enviar = ao_enviar
         self._tap = None
 
     def instalar(self) -> None:
@@ -84,9 +90,18 @@ class Teclado:
                 # apareceria no aplicativo que esta na frente.
                 return None
 
+            if codigo == TECLA_8 and modificadores & MASCARA_OPTION:
+                self._ao_atalho_texto()
+                return None
+
             if codigo == TECLA_ESC:
                 self._ao_escape()
                 return evento
+
+            if codigo == TECLA_RETURN:
+                # Sempre dispara: so importa quando a caixa esta com o campo
+                # aberto, e quem decide isso e o coordenador, nao o tap.
+                self._ao_enviar()
 
             self._ao_digitar()
         except Exception:  # noqa: BLE001 - um erro aqui derrubaria o tap

@@ -94,8 +94,10 @@ def _montar_coordenador(configuracao, caixa, executor, cliente, microfone):  # n
 def _instalar_teclado(coordenador: Coordenador) -> bool:
     teclado = Teclado(
         ao_atalho=coordenador.ao_atalho,
+        ao_atalho_texto=coordenador.ao_atalho_texto,
         ao_digitar=coordenador.ao_digitar,
         ao_escape=coordenador.ao_escape,
+        ao_enviar=coordenador.ao_enviar,
     )
     try:
         teclado.instalar()

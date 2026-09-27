@@ -33,6 +33,8 @@ SILENCIO = 1.2
 
 class Caixa(Protocol):
     def mostrar(self) -> None: ...
+    def mostrar_para_digitar(self) -> None: ...
+    def texto_digitado(self) -> str: ...
     def ocultar(self) -> None: ...
     def escrever(self, texto: str) -> None: ...
     def marcar_pensando(self, pensando: bool) -> None: ...
@@ -71,10 +73,14 @@ class Coordenador:
         self.dispensa = Dispensa(espera=espera)
         self.sessao: str | None = None
         self._fala: tuple[str, float] | None = None
+        # Estado.ESCUTANDO serve para os dois: microfone ligado ou campo
+        # aberto. E o modo que diz qual dos dois — e se "digitar" dispensa.
+        self._modo = "voz"
 
     def ao_atalho(self) -> None:
         """Option+9."""
         self._fala = None
+        self._modo = "voz"
         efeito = self.dispensa.atalho(self.relogio())
         if efeito is Efeito.MOSTRAR:
             self.caixa.mostrar()
@@ -85,6 +91,25 @@ class Coordenador:
             self.caixa.escrever(SEM_MICROFONE)
             # O aviso some em 5 s, como uma resposta: nao ha pedido a esperar.
             self.dispensa.concluido(self.relogio())
+
+    def ao_atalho_texto(self) -> None:
+        """Option+8: mesma caixa, com o campo pronto para digitar."""
+        self._fala = None
+        self._modo = "texto"
+        self._parar_microfone()
+        efeito = self.dispensa.atalho(self.relogio())
+        if efeito is Efeito.MOSTRAR:
+            self.caixa.mostrar()
+        self.caixa.marcar_pensando(False)
+        self.caixa.mostrar_para_digitar()
+
+    def ao_enviar(self) -> None:
+        """Enter no campo do Option+8."""
+        if (self._modo != "texto" or self.estado is not Estado.ESCUTANDO):
+            return
+        texto = self.caixa.texto_digitado().strip()
+        if texto:
+            self._enviar_pedido(texto)
 
     def sem_microfone(self) -> None:
         self._parar_microfone()
@@ -102,6 +127,10 @@ class Coordenador:
             self._fala = (texto.strip(), self.relogio())
 
     def ao_digitar(self) -> None:
+        # No modo texto, quem digita e o campo da propria caixa: nao e sinal
+        # de que o usuario voltou ao trabalho.
+        if (self._modo == "texto"):
+            return
         self._aplicar(self.dispensa.digitou())
 
     def ao_escape(self) -> None:

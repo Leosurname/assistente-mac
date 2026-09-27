@@ -18,19 +18,32 @@ class CaixaFalsa:
         self.texto = ""
         self.pensando = False
         self.historico: list[str] = []
+        self.digitando = False
+        self.campo = ""
 
     def mostrar(self) -> None:
         self.visivel = True
 
+    def mostrar_para_digitar(self) -> None:
+        self.visivel = True
+        self.digitando = True
+
+    def texto_digitado(self) -> str:
+        return self.campo
+
     def ocultar(self) -> None:
         self.visivel = False
+        self.digitando = False
 
     def escrever(self, texto: str) -> None:
+        self.digitando = False
         self.texto = texto
         self.historico.append(texto)
 
     def marcar_pensando(self, pensando: bool) -> None:
         self.pensando = pensando
+        if pensando:
+            self.digitando = False
 
 
 class MicrofoneFalso:
@@ -357,4 +370,92 @@ def test_transcricao_com_a_caixa_oculta_e_ignorada():
     coordenador.ao_transcrever("oi", final=True)
 
     assert enviados == []
+    assert not caixa.visivel
+
+
+def test_atalho_texto_mostra_a_caixa_sem_ligar_o_microfone():
+    coordenador, caixa, microfone, _, _ = montar()
+
+    coordenador.ao_atalho_texto()
+
+    assert caixa.visivel
+    assert caixa.digitando
+    assert not microfone.ouvindo
+
+
+def test_atalho_texto_desliga_o_microfone_que_ja_estava_ouvindo():
+    coordenador, caixa, microfone, _, _ = montar()
+    coordenador.ao_atalho()
+    assert microfone.ouvindo
+
+    coordenador.ao_atalho_texto()
+
+    assert not microfone.ouvindo
+    assert caixa.digitando
+
+
+def test_enter_manda_o_pedido_digitado():
+    coordenador, caixa, _, _, enviados = montar()
+    coordenador.ao_atalho_texto()
+    caixa.campo = "quero terminal e safari"
+
+    coordenador.ao_enviar()
+
+    assert len(enviados) == 1
+    assert enviados[0]["texto"] == "quero terminal e safari"
+    assert coordenador.estado is Estado.PENSANDO
+
+
+def test_enter_com_campo_vazio_nao_manda_nada():
+    coordenador, _, _, _, enviados = montar()
+    coordenador.ao_atalho_texto()
+
+    coordenador.ao_enviar()
+
+    assert enviados == []
+
+
+def test_enter_fora_do_modo_texto_e_ignorado():
+    coordenador, _, _, _, enviados = montar()
+    coordenador.ao_atalho()
+    coordenador.ao_transcrever("abre o terminal", final=False)
+
+    coordenador.ao_enviar()
+
+    assert enviados == []
+
+
+def test_digitar_no_modo_texto_nao_fecha_a_caixa():
+    coordenador, caixa, _, _, _ = montar()
+    coordenador.ao_atalho_texto()
+
+    coordenador.ao_digitar()
+
+    assert caixa.visivel
+
+
+def test_esc_fecha_a_caixa_aberta_no_modo_texto():
+    coordenador, caixa, _, _, _ = montar()
+    coordenador.ao_atalho_texto()
+
+    coordenador.ao_escape()
+
+    assert not caixa.visivel
+
+
+def test_fluxo_completo_pelo_texto_ate_a_caixa_sumir():
+    coordenador, caixa, _, relogio, _ = montar()
+    executor = ExecutorFalso()
+    coordenador.executor = executor
+    coordenador.ao_atalho_texto()
+    caixa.campo = "quero terminal e safari"
+
+    coordenador.ao_enviar()
+    coordenador.ao_responder(RESPOSTA)
+
+    assert [a.app for a in executor.executadas] == ["Terminal", "Safari"]
+    assert caixa.texto == "concluído"
+
+    relogio.agora = 5.0
+    coordenador.ao_tique()
     assert not caixa.visivel
