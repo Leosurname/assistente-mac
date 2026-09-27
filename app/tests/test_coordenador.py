@@ -8,7 +8,7 @@ from __future__ import annotations
 
 from typing import Any
 
-from assistente_app.coordenador import MENSAGEM_DE_FALHA, Coordenador
+from assistente_app.coordenador import MENSAGEM_DE_FALHA, SEM_MICROFONE, Coordenador
 from assistente_app.dispensa import Estado
 
 
@@ -42,6 +42,11 @@ class MicrofoneFalso:
 
     def parar(self) -> None:
         self.ouvindo = False
+
+
+class MicrofoneQuebrado(MicrofoneFalso):
+    def ouvir(self) -> None:
+        raise RuntimeError("sem entrada de áudio")
 
 
 class ExecutorFalso:
@@ -104,6 +109,47 @@ def test_atalho_mostra_a_caixa_e_liga_o_microfone():
     assert caixa.visivel
     assert microfone.ouvindo
     assert coordenador.estado is Estado.ESCUTANDO
+
+
+def test_sem_microfone_o_atalho_avisa_e_a_caixa_some_sozinha():
+    caixa = CaixaFalsa()
+    relogio = Relogio()
+    coordenador = Coordenador(
+        caixa=caixa,
+        executor=ExecutorFalso(),
+        retrato=dict,
+        enviar=lambda _: None,
+        relogio=relogio,
+        espera=5.0,
+    )
+
+    coordenador.ao_atalho()
+    assert caixa.visivel
+    assert caixa.texto == SEM_MICROFONE
+
+    relogio.agora = 5.0
+    coordenador.ao_tique()
+    assert not caixa.visivel
+
+
+def test_fala_negada_faz_o_atalho_so_avisar():
+    coordenador, caixa, microfone, _, _ = montar()
+
+    coordenador.sem_microfone()
+    coordenador.ao_atalho()
+
+    assert not microfone.ouvindo
+    assert caixa.texto == SEM_MICROFONE
+
+
+def test_microfone_que_falha_ao_ligar_vira_aviso():
+    coordenador, caixa, _, _, _ = montar()
+    coordenador.microfone = MicrofoneQuebrado()
+
+    coordenador.ao_atalho()
+
+    assert caixa.visivel
+    assert caixa.texto == SEM_MICROFONE
 
 
 def test_transcricao_parcial_aparece_na_caixa_sem_enviar_nada():

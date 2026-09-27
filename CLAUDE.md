@@ -8,8 +8,9 @@ Assistente de voz para macOS que organiza janelas. `Option + 9` abre uma caixa
 de sobreposição, o usuário fala um pedido, a Layla traduz em ações, o
 aplicativo executa, a caixa some em 5 segundos ou quando o usuário digita.
 
-**A beta é só texto.** O pedido chega digitado; microfone e transcrição entram
-depois da beta. Não adiante código de voz.
+**A beta tem voz e texto.** `Option + 9` ouve o microfone; `Option + 8` abre a
+caixa com um campo para digitar o pedido. A voz é opcional: sem microfone ou
+sem permissão de fala, o app sobe e `Option + 9` só avisa na caixa.
 
 Leia [plan.md](plan.md) antes de mexer em qualquer coisa: o comportamento da
 caixa é o produto, não um detalhe de interface.

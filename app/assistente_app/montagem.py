@@ -12,7 +12,7 @@ from AppKit import (
 )
 from Foundation import NSRunLoop
 
-from assistente_app import contexto
+from assistente_app import contexto, voz
 from assistente_app.atalho import PermissaoNegada, Teclado
 from assistente_app.cliente import ClienteDoBackend
 from assistente_app.configuracao import Configuracao
@@ -22,7 +22,6 @@ from assistente_app.fila import despachar_na_principal
 from assistente_app.janelas import ExecutorDeJanelas
 from assistente_app.ponte import Ponte
 from assistente_app.sobreposicao import Sobreposicao
-from assistente_app.voz import Microfone, MicrofoneIndisponivel
 
 registrador = logging.getLogger(__name__)
 
@@ -47,19 +46,15 @@ def principal() -> int:
     )
     cliente.iniciar()
 
-    try:
-        microfone = Microfone(configuracao.idioma, ponte.ao_transcrever)
-    except MicrofoneIndisponivel as erro:
-        registrador.error("%s", erro)
-        return 1
-
+    microfone = _criar_microfone(configuracao, ponte)
     coordenador = _montar_coordenador(configuracao, caixa, executor, cliente, microfone)
     ponte.coordenador = coordenador
     if not _instalar_teclado(coordenador):
         return 1
     _iniciar_tique(coordenador)
+    if (microfone is not None):
+        _pedir_permissao_de_fala(coordenador)
 
-    Microfone.pedir_permissao(_registrar_permissao)
     registrador.info("Assistente Mac de pé. Aperte Option+9.")
     NSRunLoop.currentRunLoop()
     aplicativo.run()
@@ -72,6 +67,15 @@ def _criar_aplicativo() -> NSApplication:
     # janela a mais, e um atalho.
     aplicativo.setActivationPolicy_(NSApplicationActivationPolicyAccessory)
     return aplicativo
+
+
+# A voz e opcional: sem microfone o app sobe e Option+9 so avisa.
+def _criar_microfone(configuracao: Configuracao, ponte: Ponte) -> voz.Microfone | None:
+    try:
+        return voz.Microfone(configuracao.idioma, ponte.ao_transcrever)
+    except voz.MicrofoneIndisponivel as erro:
+        registrador.warning("Sem voz: %s", erro)
+        return None
 
 
 def _montar_coordenador(configuracao, caixa, executor, cliente, microfone):  # noqa: ANN001, ANN202
@@ -107,5 +111,11 @@ def _iniciar_tique(coordenador: Coordenador) -> None:
     )
 
 
-def _registrar_permissao(concedida: bool) -> None:
-    registrador.info("Reconhecimento de fala %s", "liberado" if concedida else "negado")
+def _pedir_permissao_de_fala(coordenador: Coordenador) -> None:
+    def responder(concedida: bool) -> None:
+        estado = "liberado" if concedida else "negado"
+        registrador.info("Reconhecimento de fala %s", estado)
+        if not concedida:
+            despachar_na_principal(coordenador.sem_microfone)
+
+    voz.Microfone.pedir_permissao(responder)
