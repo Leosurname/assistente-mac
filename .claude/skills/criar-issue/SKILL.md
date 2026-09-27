@@ -7,7 +7,8 @@ argument-hint: <o que a issue pede>
 Chame o agente `autor-de-issue` com a ferramenta Agent, com o pedido no modelo
 do CLAUDE.md: Estamos em: o pedido do dono — $ARGUMENTS — e issues parecidas
 se houver. Você faz: escrever a issue. Devolva: link da issue, ou da issue
-parecida que já existe.
+parecida que já existe. Some ao pedido o que o dono já decidiu ou tirou do
+escopo nesta conversa.
 
 Sem pedido, pergunte ao dono o que a issue deve pedir.
 
