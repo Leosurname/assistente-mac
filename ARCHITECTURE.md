@@ -65,8 +65,9 @@ enquanto o usuário fala. O fim da fala é detectado por silêncio.
 
 **Executor de janelas.** Abertura de aplicativos por `NSWorkspace`, e
 posicionamento pela API de acessibilidade (`AXUIElement`, atributos
-`kAXPositionAttribute` e `kAXSizeAttribute`). Exige permissão de
-Acessibilidade concedida pelo usuário.
+`kAXPositionAttribute` e `kAXSizeAttribute`). `entrar_tela_cheia` usa o
+atributo `AXFullScreen`. Exige permissão de Acessibilidade concedida pelo
+usuário.
 
 **Coletor de contexto.** Antes de mandar o pedido, monta um retrato da tela:
 aplicativos rodando, janelas visíveis com posição e tamanho, resolução e
@@ -131,7 +132,8 @@ O backend responde com ações:
 ```
 
 O catálogo de ações começa pequeno e cresce conforme a necessidade:
-`abrir_app`, `fechar_app`, `posicionar`, `focar`, `minimizar`.
+`abrir_app`, `fechar_app`, `posicionar`, `focar`, `minimizar`,
+`entrar_tela_cheia`.
 
 ## Princípio de segurança
 

@@ -35,11 +35,12 @@ def test_todas_as_acoes_do_catalogo_passam():
         {"acao": "focar", "app": "Safari"},
         {"acao": "minimizar", "app": "Safari"},
         {"acao": "posicionar", "app": "Terminal", "regiao": "metade_esquerda"},
+        {"acao": "entrar_tela_cheia", "app": "Safari"},
     ]
 
     resultado = _validar(acoes)
 
-    assert len(resultado.aprovadas) == 4
+    assert len(resultado.aprovadas) == 5
     assert not resultado.houve_recusa
 
 

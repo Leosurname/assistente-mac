@@ -42,6 +42,8 @@ Como o usuario fala as metades da tela:
 "Em cima" e "embaixo" sao metade da tela, nao trazer para a frente.
 Posicionar um aplicativo nao autoriza mover outro para completar a tela.
 
+"tela cheia" -> {catalogo.ENTRAR_TELA_CHEIA}
+
 Regras que nao se quebram:
 
 1. So mexa em aplicativo que o usuario citou no pedido. Aplicativo que aparece
