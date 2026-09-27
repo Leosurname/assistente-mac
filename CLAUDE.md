@@ -27,8 +27,12 @@ backend/   Python — conversa com a Layla, tradução de pedido em ações
 **O projeto é todo Python.** Backend e camada nativa (via PyObjC). Decisão
 fechada, não reabra.
 
-**A sobreposição não rouba foco.** Se uma mudança fizer o `NSPanel` ativar,
-ela quebrou o produto: a digitação do usuário é o que dispensa a caixa.
+**A sobreposição não rouba foco.** Se uma mudança fizer o `NSPanel` ativar a
+aplicação ou trocar o app da frente, ela quebrou o produto. Exceção: aberta
+por `Option + 8`, a caixa pode virar janela chave para receber o que é
+digitado no seu próprio campo — mas nunca ativa o app nem muda o app da
+frente. A caixa aberta por `Option + 9` segue a regra antiga: digitar no
+aplicativo de baixo é o que a dispensa.
 
 **A Layla não executa nada.** Ela devolve ações de um catálogo fechado. Toda
 ação é validada antes de tocar no sistema. Nunca construa caminho em que texto
