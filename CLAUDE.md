@@ -59,13 +59,16 @@ Padrões de branch, commit e PR: [CONTRIBUTING.md](CONTRIBUTING.md).
 Cada modo é um agente em `.claude/agents/`, com o próprio roteiro e só a
 leitura de que precisa:
 
-| Pedido do dono | Agente |
-|---|---|
-| Revisar PR | `revisor-de-pr` |
-| Criar PR | `autor-de-pr` |
-| Revisar issue | `revisor-de-issue` |
-| Criar issue | `autor-de-issue` |
-| Organizar repositório | `organizador` |
+| Pedido do dono | Agente | Comando |
+|---|---|---|
+| Revisar PR | `revisor-de-pr` | `/revisar-pr <n>` |
+| Criar PR | `autor-de-pr` | `/criar-pr <issue>` |
+| Revisar issue | `revisor-de-issue` | `/revisar-issue <n>` |
+| Criar issue | `autor-de-issue` | `/criar-issue <pedido>` |
+| Organizar repositório | `organizador` | `/organizar-repo` |
+
+`/equipe <pedido>` escolhe o agente. `/equipe fluxo <issue>` roda revisar
+issue, criar PR e revisar PR em sequência, parando nas decisões do dono.
 
 ## Como escrever o código
 
