@@ -55,6 +55,15 @@ def test_cada_forma_de_falar_aparece_junto_da_sua_metade(forma, regiao):
     assert any(f'"{forma}"' in linha and regiao in linha for linha in linhas)
 
 
+def test_tela_cheia_aparece_junto_de_entrar_tela_cheia():
+    linhas = prompt.instrucoes().splitlines()
+
+    assert any(
+        '"tela cheia"' in linha and catalogo.ENTRAR_TELA_CHEIA in linha
+        for linha in linhas
+    )
+
+
 def test_posicionar_um_app_nao_autoriza_mover_outro_para_completar_a_tela():
     texto = prompt.instrucoes().lower()
 

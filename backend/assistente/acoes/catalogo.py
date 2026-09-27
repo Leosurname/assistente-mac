@@ -13,9 +13,10 @@ FECHAR_APP: Final = "fechar_app"
 POSICIONAR: Final = "posicionar"
 FOCAR: Final = "focar"
 MINIMIZAR: Final = "minimizar"
+ENTRAR_TELA_CHEIA: Final = "entrar_tela_cheia"
 
 CATALOGO: Final[frozenset[str]] = frozenset(
-    {ABRIR_APP, FECHAR_APP, POSICIONAR, FOCAR, MINIMIZAR}
+    {ABRIR_APP, FECHAR_APP, POSICIONAR, FOCAR, MINIMIZAR, ENTRAR_TELA_CHEIA}
 )
 
 # As regioes sao nomes, nao coordenadas, porque quem sabe o tamanho real da
@@ -45,6 +46,8 @@ DESCRICAO_DAS_ACOES: Final[dict[str, str]] = {
     POSICIONAR: "Move e redimensiona a janela de um aplicativo para uma regiao.",
     FOCAR: "Traz a janela de um aplicativo para a frente.",
     MINIMIZAR: "Minimiza a janela de um aplicativo.",
+    ENTRAR_TELA_CHEIA: "Poe a janela do aplicativo no modo de tela cheia do "
+    "macOS, num Space so dela.",
 }
 
 
