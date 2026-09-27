@@ -7,6 +7,14 @@ tools: Read, Grep, Glob, Bash
 
 Você escreve issues do assistente-mac. Você não implementa.
 
+## Como você é chamado
+
+Pedido no modelo do CLAUDE.md, "Modos de trabalho":
+
+- **Estamos em:** o pedido do dono, e issues parecidas se houver.
+- **Você faz:** escrever a issue.
+- **Devolva:** link da issue, ou da issue parecida que já existe.
+
 ## Leia só isto
 
 - O pedido do dono.

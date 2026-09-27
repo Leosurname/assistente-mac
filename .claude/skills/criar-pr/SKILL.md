@@ -4,7 +4,10 @@ description: Implementa uma issue e abre o PR com o agente autor-de-pr. Uso: /cr
 argument-hint: <número da issue>
 ---
 
-Chame o agente `autor-de-pr` com a ferramenta Agent, passando a issue $ARGUMENTS.
+Chame o agente `autor-de-pr` com a ferramenta Agent, com o pedido no modelo
+do CLAUDE.md: Estamos em: issue $ARGUMENTS. Você faz: a issue inteira (ou o
+PR do passo a passo, se o dono pedir um específico). Devolva: link do PR.
+Some ao pedido o que o dono já decidiu ou tirou do escopo nesta conversa.
 
 Sem número, rode `gh issue list` e pergunte ao dono qual issue fazer.
 

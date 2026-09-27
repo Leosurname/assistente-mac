@@ -71,6 +71,19 @@ leitura de que precisa:
 Cada agente declara o modelo no `model:` do frontmatter. Sonnet para código e
 ideias, Opus só para revisão, por custo.
 
+Todo agente é chamado com este pedido. Cada agente diz, em "Como você é
+chamado", como preenche cada campo:
+
+- **Estamos em:** issue, PR ou branch do trabalho.
+- **Você faz:** a tarefa, em uma ou poucas linhas.
+- **Já decidido pelo dono:** o que ele já respondeu e não volta como pergunta.
+- **Fora do escopo:** o que não mexer.
+- **Devolva:** o que o agente entrega no fim.
+
+"Estamos em", "Você faz" e "Devolva" são obrigatórios; os outros saem quando
+estão vazios. "Já decidido" leva só o que o dono disse, nunca autorização de
+mesclar, apagar ou fechar.
+
 `/equipe <pedido>` escolhe o agente. `/equipe fluxo <issue>` roda revisar
 issue, criar PR e revisar PR em sequência, parando nas decisões do dono.
 

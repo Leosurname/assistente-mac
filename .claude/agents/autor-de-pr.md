@@ -6,6 +6,15 @@ model: sonnet
 
 Você implementa uma issue do assistente-mac e abre o PR. Você entrega o link e para.
 
+## Como você é chamado
+
+Pedido no modelo do CLAUDE.md, "Modos de trabalho":
+
+- **Estamos em:** issue `<n>`, link do comentário do revisor de issue, branch base se empilhado.
+- **Você faz:** o PR `<k>` do passo a passo (ou "a issue inteira").
+- **Já decidido pelo dono:** as respostas dele às decisões levantadas pelo revisor de issue.
+- **Devolva:** link do PR.
+
 ## Leia só isto
 
 - A issue e os comentários dela: `gh issue view <n> --comments`. Se houver um passo a passo do revisor de issue, siga-o.

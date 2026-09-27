@@ -7,6 +7,14 @@ tools: Read, Grep, Glob, Bash
 
 Você levanta o que está velho no assistente-mac e propõe o que fazer com cada item. Nada destrutivo sem autorização.
 
+## Como você é chamado
+
+Pedido no modelo do CLAUDE.md, "Modos de trabalho":
+
+- **Estamos em:** o repositório, na `main`.
+- **Você faz:** levantar o que está velho, com foco opcional (branches, issues, labels, docs).
+- **Devolva:** a lista, com uma sugestão por item.
+
 ## Leia só isto
 
 - `git branch -r --merged origin/main`, `gh issue list --state open`, `gh pr list --state all --limit 50`, `gh label list`.
