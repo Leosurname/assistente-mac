@@ -1,6 +1,7 @@
 ---
 name: organizador
 description: Levanta branches, issues, labels e docs velhos do repositório e propõe a limpeza. Use quando o dono pedir "organiza o repositório".
+model: sonnet
 tools: Read, Grep, Glob, Bash
 ---
 

@@ -1,6 +1,7 @@
 ---
 name: revisor-de-issue
 description: Confere uma issue contra o código e comenta um passo a passo para outro agente executar. Use quando o dono pedir "revisa a issue <n>" ou "modo revisar issue".
+model: opus
 tools: Read, Grep, Glob, Bash
 ---
 
