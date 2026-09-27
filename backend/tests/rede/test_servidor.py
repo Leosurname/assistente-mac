@@ -110,6 +110,56 @@ def test_pedido_devolve_acoes_no_formato_do_contrato():
     assert corpo["fala"] == "concluído"
 
 
+# A #44 ainda nao entrou: entrar_tela_cheia nao existe no catalogo, entao esse
+# caso fica pulado ate a acao existir.
+CASOS_DE_POSICAO = [
+    pytest.param("posicionar", "metade_superior", id="metade_superior"),
+    pytest.param("posicionar", "metade_inferior", id="metade_inferior"),
+    pytest.param("posicionar", "metade_esquerda", id="metade_esquerda"),
+    pytest.param("posicionar", "metade_direita", id="metade_direita"),
+    pytest.param(
+        "entrar_tela_cheia",
+        None,
+        marks=pytest.mark.skip(reason="depende da #44"),
+        id="entrar_tela_cheia",
+    ),
+]
+
+
+@pytest.mark.parametrize(("acao", "regiao"), CASOS_DE_POSICAO)
+def test_as_cinco_posicoes_chegam_pelo_websocket(acao: str, regiao: str | None):
+    detalhe = {"acao": acao, "app": "Safari"}
+    if (regiao is not None):
+        detalhe["regiao"] = regiao
+    llm = LaylaDeMentira([_resposta([detalhe])])
+
+    with _cliente(llm) as cliente, cliente.websocket_connect("/ws") as ws:
+        ws.send_json({"tipo": "pedido", "texto": "posiciona o safari", "tela": TELA})
+        corpo = ws.receive_json()
+
+    assert corpo["acoes"] == [detalhe]
+
+
+def test_duas_posicoes_na_mesma_resposta_chegam_as_duas():
+    acoes = [
+        {"acao": "posicionar", "app": "Safari", "regiao": "metade_direita"},
+        {"acao": "posicionar", "app": "Terminal", "regiao": "metade_esquerda"},
+    ]
+    llm = LaylaDeMentira([_resposta(acoes)])
+
+    with _cliente(llm) as cliente, cliente.websocket_connect("/ws") as ws:
+        ws.send_json(
+            {
+                "tipo": "pedido",
+                "texto": "safari na direita e terminal na esquerda",
+                "tela": TELA,
+            }
+        )
+        corpo = ws.receive_json()
+
+    assert corpo["acoes"] == acoes
+
+
 def test_a_resposta_traz_o_identificador_da_sessao():
     llm = LaylaDeMentira([_resposta([{"acao": "abrir_app", "app": "Terminal"}])])
 
