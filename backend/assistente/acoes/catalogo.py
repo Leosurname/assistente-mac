@@ -23,7 +23,7 @@ CATALOGO: Final[frozenset[str]] = frozenset(
 # pixels acontece com o retrato da tela em maos.
 REGIOES: Final[frozenset[str]] = frozenset(
     {
-        "tela_cheia",
+        "maximizada",
         "metade_esquerda",
         "metade_direita",
         "metade_superior",

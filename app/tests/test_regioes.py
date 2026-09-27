@@ -21,9 +21,9 @@ def test_metades_dividem_a_area_sem_sobra():
     assert direita.x == esquerda.largura
 
 
-def test_tela_cheia_respeita_a_area_util():
+def test_maximizada_respeita_a_area_util():
     # Nao e o monitor inteiro: a barra de menu e o Dock ficam de fora.
-    cheia = calcular("tela_cheia", AREA)
+    cheia = calcular("maximizada", AREA)
 
     assert (cheia.x, cheia.y) == (0, 25)
     assert (cheia.largura, cheia.altura) == (1000, 600)

@@ -14,7 +14,7 @@ from dataclasses import dataclass
 # camada nativa nao sabe posicionar vira acao que nao acontece.
 REGIOES: frozenset[str] = frozenset(
     {
-        "tela_cheia",
+        "maximizada",
         "metade_esquerda",
         "metade_direita",
         "metade_superior",
@@ -70,7 +70,7 @@ def calcular(regiao: str, area: AreaUtil) -> Retangulo:
     terco = largura // 3
 
     match regiao:
-        case "tela_cheia":
+        case "maximizada":
             return Retangulo(x, y, largura, altura)
         case "metade_esquerda":
             return Retangulo(x, y, meia_largura, altura)
