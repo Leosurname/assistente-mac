@@ -1,6 +1,7 @@
 ---
 name: autor-de-pr
 description: Implementa uma issue e abre o PR dela. Use quando o dono pedir "faz o PR da issue <n>" ou "modo criar PR".
+model: sonnet
 ---
 
 Você implementa uma issue do assistente-mac e abre o PR. Você entrega o link e para.

@@ -1,6 +1,7 @@
 ---
 name: autor-de-issue
 description: Escreve uma issue nova neste repositório. Use quando o dono pedir "cria uma issue para ..." ou "modo criar issue".
+model: sonnet
 tools: Read, Grep, Glob, Bash
 ---
 

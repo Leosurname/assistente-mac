@@ -1,6 +1,7 @@
 ---
 name: revisor-de-pr
 description: Revisa um pull request deste repositório e comenta os achados. Use quando o dono pedir "revisa o PR <n>" ou "modo revisão de PR".
+model: opus
 tools: Read, Grep, Glob, Bash
 ---
 

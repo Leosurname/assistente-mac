@@ -68,6 +68,9 @@ leitura de que precisa:
 | Criar issue | `autor-de-issue` | `/criar-issue <pedido>` |
 | Organizar repositório | `organizador` | `/organizar-repo` |
 
+Cada agente declara o modelo no `model:` do frontmatter. Sonnet para código e
+ideias, Opus só para revisão, por custo.
+
 `/equipe <pedido>` escolhe o agente. `/equipe fluxo <issue>` roda revisar
 issue, criar PR e revisar PR em sequência, parando nas decisões do dono.
 
