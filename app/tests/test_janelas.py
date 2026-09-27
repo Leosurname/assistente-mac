@@ -41,8 +41,9 @@ class MacFalso:
     def primeira_janela(self, nome: str, esperar: bool = False):
         return f"janela de {nome}" if (nome in self.com_janela) else None
 
-    def mudar(self, janela: str, atributo: str, valor) -> None:
+    def mudar(self, janela: str, atributo: str, valor) -> int:
         self.feito.append((atributo, janela.removeprefix("janela de "), valor))
+        return janelas.kAXErrorSuccess
 
     def abrir(self, url, _configuracao, _pronto) -> None:
         self.feito.append(("abrir", url))
@@ -116,6 +117,16 @@ def test_minimizar_app_sem_janela_avisa(mac: MacFalso):
     assert falhas == ["o Terminal não tem janela para minimizar"]
 
 
+def test_minimizar_recusado_pela_acessibilidade_vira_falha(
+    mac: MacFalso, monkeypatch: pytest.MonkeyPatch
+):
+    monkeypatch.setattr(janelas, "AXUIElementSetAttributeValue", lambda *_: -1)
+
+    falhas = executar(Acao("minimizar", "Safari"))
+
+    assert falhas == ["não consegui minimizar o Safari"]
+
+
 def test_posicionar_move_antes_de_redimensionar(mac: MacFalso):
     executar(Acao("posicionar", "Safari", "metade_direita"))
 
@@ -123,6 +134,16 @@ def test_posicionar_move_antes_de_redimensionar(mac: MacFalso):
         (janelas.kAXPositionAttribute, "Safari", (500.0, 25.0)),
         (janelas.kAXSizeAttribute, "Safari", (500.0, 600.0)),
     ]
+
+
+def test_posicionar_recusado_pela_acessibilidade_vira_falha(
+    mac: MacFalso, monkeypatch: pytest.MonkeyPatch
+):
+    monkeypatch.setattr(janelas, "AXUIElementSetAttributeValue", lambda *_: -1)
+
+    falhas = executar(Acao("posicionar", "Safari", "metade_direita"))
+
+    assert falhas == ["não consegui mover o Safari"]
 
 
 def test_regiao_desconhecida_nao_toca_na_janela(mac: MacFalso):
