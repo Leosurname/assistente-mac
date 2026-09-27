@@ -33,15 +33,28 @@ publicados em [huggingface.co/l3utterfly](https://huggingface.co/l3utterfly).
 Quem serve esses pesos é o `llama-server` do
 [llama.cpp](https://github.com/ggml-org/llama.cpp), rodando na sua máquina.
 
+**O backend garante a Layla sozinho.** Ao subir (`python main.py`), ele
+confere `LAYLA_URL`; se já responder, não mexe em nada. Se não responder, ele
+baixa os pesos na primeira vez (log de progresso) e sobe o `llama-server`
+como subprocesso próprio, com argumentos fixos. Quando o backend sai, o
+subprocesso sai junto. Só falta você instalar o `llama-server` antes.
+
 ### 1. Instale o llama.cpp
 
 ```bash
 brew install llama.cpp
 ```
 
-Ou compile do código-fonte, se preferir controlar as opções de build.
+Ou compile do código-fonte, se preferir controlar as opções de build. O
+backend procura o binário `llama-server` no `PATH`; se não achar, o arranque
+falha com uma mensagem apontando para este passo.
 
-### 2. Baixe os pesos
+### Pesos e servidor manuais (opcional)
+
+Só é preciso fazer isso na mão se você quiser controlar a versão dos pesos,
+usar um modelo diferente do recomendado, ou já ter tudo no ar antes do
+backend subir — nesse caso o backend detecta em `LAYLA_URL` e não baixa nem
+sobe nada.
 
 O modelo recomendado é o `mistral-7b-v0.1-layla-v4-chatml`, quantizado em
 `Q4_K_M`. É o fine-tune layla mais capaz em formato ChatML, que é o que lida
@@ -56,8 +69,6 @@ huggingface-cli download l3utterfly/mistral-7b-v0.1-layla-v4-chatml-gguf \
 
 Alternativa leve, para quem quiser menos latência em troca de menos
 capacidade: `l3utterfly/Qwen1.5-1.8B-layla-v4-gguf`.
-
-### 3. Suba o servidor
 
 ```bash
 llama-server \
@@ -136,6 +147,9 @@ cp .env.example .env
 |---|---|---|
 | `LAYLA_URL` | não | Endereço do `llama-server` (padrão: `http://127.0.0.1:8080`) |
 | `LAYLA_MODEL` | não | Nome do modelo a pedir ao servidor |
+| `LAYLA_PESOS_CAMINHO` | não | Onde o GGUF fica em disco (padrão: `~/modelos/mistral-7b-v0.1-layla-v4-chatml-Q4_K_M.gguf`) |
+| `LAYLA_PESOS_URL` | não | De onde baixar o GGUF na primeira vez |
+| `LAYLA_SERVER_BIN` | não | Caminho do binário `llama-server` (padrão: procura no `PATH`) |
 | `LAYLA_TIMEOUT` | não | Segundos de espera por resposta (padrão: 30) |
 | `LAYLA_TENTATIVAS` | não | Tentativas antes de desistir (padrão: 3) |
 | `LAYLA_LIMITE_CONTEXTO` | não | Tokens de contexto (padrão: 4096) |

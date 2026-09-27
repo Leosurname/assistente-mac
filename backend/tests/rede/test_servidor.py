@@ -409,3 +409,33 @@ def test_subir_usa_a_porta_do_ambiente(monkeypatch: pytest.MonkeyPatch):
     servidor.subir(aplicativo)
 
     assert portas == [9001]
+
+
+def test_subir_nao_garante_a_layla_sem_configuracao_no_state(monkeypatch):
+    """Um app montado a mao (testes, outro entrypoint) nao dispara o arranque."""
+    chamado = []
+    monkeypatch.setattr(servidor.uvicorn, "run", lambda *_a, **_k: None)
+    monkeypatch.setattr(
+        servidor.asyncio, "run", lambda *_a, **_k: chamado.append("arranque")
+    )
+
+    aplicativo = servidor.criar_aplicativo(
+        llm=LaylaDeMentira([]), sessoes=sessao.RegistroDeSessoes()
+    )
+    servidor.subir(aplicativo)
+
+    assert chamado == []
+
+
+def test_subir_garante_a_layla_quando_montado_do_ambiente(monkeypatch):
+    monkeypatch.setattr(servidor.uvicorn, "run", lambda *_a, **_k: None)
+    chamado = []
+    monkeypatch.setattr(
+        servidor.asyncio, "run", lambda corrotina: chamado.append(corrotina)
+    )
+
+    aplicativo = servidor.montar_do_ambiente()
+    servidor.subir(aplicativo)
+
+    assert len(chamado) == 1
+    chamado[0].close()  # evita o aviso de corrotina nunca aguardada
