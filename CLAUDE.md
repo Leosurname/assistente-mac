@@ -54,6 +54,11 @@ ruff check . && pytest
 
 Padrões de branch, commit e PR: [CONTRIBUTING.md](CONTRIBUTING.md).
 
+## Modos de trabalho
+
+Quando o dono pedir um modo (revisão de PR, criar PR, revisar issue, criar
+issue, organizar repositório), siga o roteiro em [modos.md](modos.md).
+
 ## Como escrever o código
 
 Leia [preferencias.md](preferencias.md) antes da primeira linha. Em uma linha:
