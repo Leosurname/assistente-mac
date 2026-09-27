@@ -5,9 +5,10 @@ argument-hint: <número da issue>
 ---
 
 Chame o agente `autor-de-pr` com a ferramenta Agent, com o pedido no modelo
-do CLAUDE.md: Estamos em: issue $ARGUMENTS. Você faz: a issue inteira (ou o
-PR do passo a passo, se o dono pedir um específico). Devolva: link do PR.
-Some ao pedido o que o dono já decidiu ou tirou do escopo nesta conversa.
+do CLAUDE.md: Estamos em: issue $ARGUMENTS, e o link do comentário do
+revisor de issue, se houver. Você faz: o PR `<k>` do passo a passo, se o
+dono pedir um específico (ou "a issue inteira"). Devolva: link do PR. Some
+ao pedido o que o dono já decidiu ou tirou do escopo nesta conversa.
 
 Sem número, rode `gh issue list` e pergunte ao dono qual issue fazer.
 

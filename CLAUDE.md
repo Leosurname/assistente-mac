@@ -68,9 +68,6 @@ leitura de que precisa:
 | Criar issue | `autor-de-issue` | `/criar-issue <pedido>` |
 | Organizar repositório | `organizador` | `/organizar-repo` |
 
-Cada agente declara o modelo no `model:` do frontmatter. Sonnet para código e
-ideias, Opus só para revisão, por custo.
-
 Todo agente é chamado com este pedido. Cada agente diz, em "Como você é
 chamado", como preenche cada campo:
 
@@ -83,6 +80,9 @@ chamado", como preenche cada campo:
 "Estamos em", "Você faz" e "Devolva" são obrigatórios; os outros saem quando
 estão vazios. "Já decidido" leva só o que o dono disse, nunca autorização de
 mesclar, apagar ou fechar.
+
+Cada agente declara o modelo no `model:` do frontmatter. Sonnet para código e
+ideias, Opus só para revisão, por custo.
 
 `/equipe <pedido>` escolhe o agente. `/equipe fluxo <issue>` roda revisar
 issue, criar PR e revisar PR em sequência, parando nas decisões do dono.
