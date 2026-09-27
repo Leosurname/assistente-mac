@@ -13,6 +13,7 @@ from AppKit import NSWorkspace, NSWorkspaceOpenConfiguration
 from ApplicationServices import (
     AXUIElementSetAttributeValue,
     AXValueCreate,
+    kAXErrorSuccess,
     kAXPositionAttribute,
     kAXSizeAttribute,
     kAXValueTypeCGPoint,
@@ -86,7 +87,9 @@ class ExecutorDeJanelas:
         janela = primeira_janela(nome)
         if janela is None:
             return f"o {nome} não tem janela para minimizar"
-        AXUIElementSetAttributeValue(janela, "AXMinimized", True)
+        codigo = AXUIElementSetAttributeValue(janela, "AXMinimized", True)
+        if (codigo != kAXErrorSuccess):
+            return f"não consegui minimizar o {nome}"
         return None
 
     def _posicionar(self, nome: str, regiao: str) -> str | None:
@@ -106,8 +109,14 @@ class ExecutorDeJanelas:
         # Posicao antes de tamanho: se a janela for maior que a area de destino,
         # redimensionar primeiro evita que o macOS a empurre de volta para
         # dentro do monitor e desfaça o movimento.
-        AXUIElementSetAttributeValue(janela, kAXPositionAttribute, ponto)
-        AXUIElementSetAttributeValue(janela, kAXSizeAttribute, tamanho)
+        codigo_posicao = AXUIElementSetAttributeValue(
+            janela, kAXPositionAttribute, ponto
+        )
+        codigo_tamanho = AXUIElementSetAttributeValue(
+            janela, kAXSizeAttribute, tamanho
+        )
+        if (codigo_posicao != kAXErrorSuccess or codigo_tamanho != kAXErrorSuccess):
+            return f"não consegui mover o {nome}"
         return None
 
 
