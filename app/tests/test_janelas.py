@@ -10,7 +10,9 @@ pytest.importorskip("AppKit")
 
 from assistente_app import janelas  # noqa: E402
 from assistente_app.protocolo import Acao  # noqa: E402
-from assistente_app.regioes import AreaUtil  # noqa: E402
+from assistente_app.regioes import AreaUtil, calcular  # noqa: E402
+
+AREA = AreaUtil(x=0, y=25, largura=1000, altura=600)
 
 
 class AppFalso:
@@ -116,12 +118,22 @@ def test_minimizar_app_sem_janela_avisa(mac: MacFalso):
     assert falhas == ["o Terminal não tem janela para minimizar"]
 
 
-def test_posicionar_move_antes_de_redimensionar(mac: MacFalso):
-    executar(Acao("posicionar", "Safari", "metade_direita"))
+@pytest.mark.parametrize(
+    "regiao",
+    ["metade_esquerda", "metade_direita", "metade_superior", "metade_inferior"],
+)
+def test_posicionar_move_antes_de_redimensionar(mac: MacFalso, regiao: str):
+    alvo = calcular(regiao, AREA)
+
+    executar(Acao("posicionar", "Safari", regiao))
 
     assert mac.feito == [
-        (janelas.kAXPositionAttribute, "Safari", (500.0, 25.0)),
-        (janelas.kAXSizeAttribute, "Safari", (500.0, 600.0)),
+        (janelas.kAXPositionAttribute, "Safari", (float(alvo.x), float(alvo.y))),
+        (
+            janelas.kAXSizeAttribute,
+            "Safari",
+            (float(alvo.largura), float(alvo.altura)),
+        ),
     ]
 
 

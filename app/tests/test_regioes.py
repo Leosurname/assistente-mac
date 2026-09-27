@@ -29,6 +29,25 @@ def test_tela_cheia_respeita_a_area_util():
     assert (cheia.largura, cheia.altura) == (1000, 600)
 
 
+def test_metades_horizontais_dividem_a_altura_sem_sobra():
+    superior = calcular("metade_superior", AREA)
+    inferior = calcular("metade_inferior", AREA)
+
+    assert superior.y == AREA.y
+    assert superior.altura + inferior.altura == AREA.altura
+    assert inferior.y == AREA.y + superior.altura
+
+
+def test_altura_impar_nao_deixa_buraco():
+    area = AreaUtil(x=0, y=25, largura=1000, altura=501)
+
+    superior = calcular("metade_superior", area)
+    inferior = calcular("metade_inferior", area)
+
+    assert inferior.y == area.y + superior.altura
+    assert inferior.y + inferior.altura == area.y + area.altura
+
+
 def test_tercos_cobrem_a_largura_inteira():
     esquerdo = calcular("terco_esquerdo", AREA)
     central = calcular("terco_central", AREA)
