@@ -56,8 +56,16 @@ Padrões de branch, commit e PR: [CONTRIBUTING.md](CONTRIBUTING.md).
 
 ## Modos de trabalho
 
-Quando o dono pedir um modo (revisão de PR, criar PR, revisar issue, criar
-issue, organizar repositório), siga o roteiro em [modos.md](modos.md).
+Cada modo é um agente em `.claude/agents/`, com o próprio roteiro e só a
+leitura de que precisa:
+
+| Pedido do dono | Agente |
+|---|---|
+| Revisar PR | `revisor-de-pr` |
+| Criar PR | `autor-de-pr` |
+| Revisar issue | `revisor-de-issue` |
+| Criar issue | `autor-de-issue` |
+| Organizar repositório | `organizador` |
 
 ## Como escrever o código
 
