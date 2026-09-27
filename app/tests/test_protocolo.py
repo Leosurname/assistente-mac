@@ -49,6 +49,19 @@ def test_le_acoes():
     assert resposta.sessao == "s1"
 
 
+def test_entrar_tela_cheia_nao_precisa_de_regiao():
+    resposta = ler_resposta(
+        {
+            "tipo": "acoes",
+            "acoes": [{"acao": "entrar_tela_cheia", "app": "Safari"}],
+            "fala": "ok",
+        }
+    )
+
+    assert resposta.acoes[0].acao == "entrar_tela_cheia"
+    assert resposta.acoes[0].regiao is None
+
+
 def test_acao_fora_do_catalogo_e_recusada():
     # O catalogo e fechado. Nao ha caminho em que texto de modelo vira comando.
     with pytest.raises(RespostaInvalida):

@@ -13,7 +13,7 @@ from typing import Any
 from assistente_app.regioes import REGIOES
 
 CATALOGO: frozenset[str] = frozenset(
-    {"abrir_app", "fechar_app", "posicionar", "focar", "minimizar"}
+    {"abrir_app", "fechar_app", "posicionar", "focar", "minimizar", "entrar_tela_cheia"}
 )
 
 FALA_PADRAO = "concluído"

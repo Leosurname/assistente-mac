@@ -26,10 +26,14 @@ class AppFalso:
 
 
 class MacFalso:
-    def __init__(self, abertos=(), instalados=(), com_janela=()) -> None:
+    def __init__(
+        self, abertos=(), instalados=(), com_janela=(), sem_tela_cheia=()
+    ) -> None:
         self.abertos = set(abertos)
         self.instalados = set(abertos) | set(instalados)
         self.com_janela = set(com_janela)
+        self.sem_tela_cheia = set(sem_tela_cheia)
+        self.em_tela_cheia: set[str] = set()
         self.feito: list[tuple] = []
 
     def rodando(self, nome: str):
@@ -42,7 +46,18 @@ class MacFalso:
         return f"janela de {nome}" if (nome in self.com_janela) else None
 
     def mudar(self, janela: str, atributo: str, valor) -> None:
-        self.feito.append((atributo, janela.removeprefix("janela de "), valor))
+        nome = janela.removeprefix("janela de ")
+        self.feito.append((atributo, nome, valor))
+        if (atributo == "AXFullScreen"):
+            self.em_tela_cheia.add(nome) if valor else self.em_tela_cheia.discard(nome)
+
+    def settable(self, janela: str, atributo: str) -> bool:
+        nome = janela.removeprefix("janela de ")
+        return not ((atributo == "AXFullScreen") and (nome in self.sem_tela_cheia))
+
+    def ler(self, janela: str, atributo: str, _none):
+        nome = janela.removeprefix("janela de ")
+        return (janelas.kAXErrorSuccess, nome in self.em_tela_cheia)
 
     def abrir(self, url, _configuracao, _pronto) -> None:
         self.feito.append(("abrir", url))
@@ -70,7 +85,10 @@ def mac(monkeypatch: pytest.MonkeyPatch) -> MacFalso:
     monkeypatch.setattr(janelas, "caminho_do_aplicativo", falso.caminho)
     monkeypatch.setattr(janelas, "primeira_janela", falso.primeira_janela)
     monkeypatch.setattr(janelas, "AXUIElementSetAttributeValue", falso.mudar)
+    monkeypatch.setattr(janelas, "AXUIElementIsAttributeSettable", falso.settable)
+    monkeypatch.setattr(janelas, "AXUIElementCopyAttributeValue", falso.ler)
     monkeypatch.setattr(janelas, "AXValueCreate", lambda _tipo, valor: valor)
+    monkeypatch.setattr(janelas.time, "sleep", lambda _segundos: None)
     area = SimpleNamespace(sharedWorkspace=lambda: AreaDeTrabalho(falso))
     monkeypatch.setattr(janelas, "NSWorkspace", area)
     monkeypatch.setattr(janelas, "NSURL", SimpleNamespace(fileURLWithPath_=str))
@@ -152,6 +170,54 @@ def test_uma_acao_que_quebra_nao_impede_as_seguintes(
     assert len(falhas) == 1
     assert "acessibilidade negada" in falhas[0]
     assert mac.feito == [("abrir", "/Applications/Terminal.app")]
+
+
+def test_entrar_tela_cheia_seta_o_atributo(mac: MacFalso):
+    assert executar(Acao("entrar_tela_cheia", "Safari")) == []
+    assert mac.feito == [("AXFullScreen", "Safari", True)]
+
+
+def test_entrar_tela_cheia_ja_nela_nao_mexe_de_novo(mac: MacFalso):
+    mac.em_tela_cheia.add("Safari")
+
+    assert executar(Acao("entrar_tela_cheia", "Safari")) == []
+    assert mac.feito == []
+
+
+def test_entrar_tela_cheia_sem_suporte_avisa(mac: MacFalso):
+    mac.sem_tela_cheia.add("Safari")
+
+    falhas = executar(Acao("entrar_tela_cheia", "Safari"))
+
+    assert falhas == ["o Safari não entra em tela cheia"]
+    assert mac.feito == []
+
+
+def test_posicionar_janela_em_tela_cheia_sai_antes_de_mover(mac: MacFalso):
+    mac.em_tela_cheia.add("Safari")
+
+    executar(Acao("posicionar", "Safari", "metade_direita"))
+
+    assert mac.feito == [
+        ("AXFullScreen", "Safari", False),
+        (janelas.kAXPositionAttribute, "Safari", (500.0, 25.0)),
+        (janelas.kAXSizeAttribute, "Safari", (500.0, 600.0)),
+    ]
+
+
+def test_posicionar_avisa_se_a_janela_nao_sai_da_tela_cheia(
+    mac: MacFalso, monkeypatch: pytest.MonkeyPatch
+):
+    mac.em_tela_cheia.add("Safari")
+    monkeypatch.setattr(
+        janelas,
+        "AXUIElementCopyAttributeValue",
+        lambda _j, _a, _n: (janelas.kAXErrorSuccess, True),
+    )
+
+    falhas = executar(Acao("posicionar", "Safari", "metade_direita"))
+
+    assert falhas == ["o Safari não saiu da tela cheia"]
 
 
 def test_so_mexe_nos_apps_citados_nas_acoes(mac: MacFalso):
